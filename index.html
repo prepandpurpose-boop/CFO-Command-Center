@@ -141,6 +141,11 @@
 
   .empty{color:var(--muted);font-style:italic;padding:20px;text-align:center;font-size:.9rem}
 
+  .howto-steps{padding-left:22px}
+  .howto-steps li{margin-bottom:12px;line-height:1.6}
+  .howto-list{padding-left:22px;margin-top:2px}
+  .howto-list li{margin-bottom:8px;line-height:1.55}
+
   .goalrow{border:1px solid var(--cream-dk);border-radius:12px;padding:16px 18px;margin-bottom:12px;background:var(--cream)}
   .goalrow .gtop{display:flex;gap:10px;align-items:center;margin-bottom:10px}
   .goalrow .gtop .gname{font-weight:600;background:transparent;border:none;color:var(--green);padding:2px 0;font-family:'Cormorant Garamond',serif;font-size:1.25rem}
@@ -179,6 +184,7 @@
   .cal-chip.meal{background:#2f5fa0;cursor:pointer}
   .cal-chip.routine{background:#C59B27}
   .cal-chip.family{background:#6b4f9e}
+  .cal-chip.chore{background:#127a76}
   .cal-chip.note{background:#6d7466}
   .cal-more{font-size:.62rem;color:var(--muted);padding-left:2px}
   .cal-week{display:flex;flex-direction:column;gap:10px}
@@ -189,7 +195,7 @@
   .cal-wkrow{display:flex;align-items:center;gap:10px;padding:5px 0;border-top:1px dotted var(--cream-dk);font-size:.9rem}
   .cal-wkrow:first-of-type{border-top:none}
   .cal-tag{font-size:.6rem;text-transform:uppercase;letter-spacing:1px;font-weight:700;color:#fff;padding:2px 8px;border-radius:20px;flex:0 0 auto}
-  .cal-tag.payday{background:#1E4620}.cal-tag.bill{background:#8f3a2f}.cal-tag.meal{background:#2f5fa0}.cal-tag.routine{background:#C59B27}.cal-tag.family{background:#6b4f9e}.cal-tag.note{background:#6d7466}
+  .cal-tag.payday{background:#1E4620}.cal-tag.bill{background:#8f3a2f}.cal-tag.meal{background:#2f5fa0}.cal-tag.routine{background:#C59B27}.cal-tag.family{background:#6b4f9e}.cal-tag.chore{background:#127a76}.cal-tag.note{background:#6d7466}
   .cal-wkrow .amt{margin-left:auto;font-weight:600;color:var(--green);font-variant-numeric:tabular-nums}
   .cal-wkrow .open{color:var(--blue);cursor:pointer;font-size:.8rem;text-decoration:underline;margin-left:auto}
   .cal-empty{color:var(--muted);font-style:italic;font-size:.82rem}
@@ -279,20 +285,21 @@
 
 <nav class="tabs">
   <div class="tabs-inner">
-    <button class="tab active" data-panel="dashboard"><span class="ic">🏛️</span>Dashboard</button>
+    <button class="tab active" data-panel="treasury"><span class="ic">📊</span>Treasury</button>
+    <button class="tab" data-panel="dashboard"><span class="ic">🏛️</span>Dashboard</button>
     <button class="tab" data-panel="calendar"><span class="ic">🗓️</span>Calendar</button>
-    <button class="tab" data-panel="treasury"><span class="ic">📊</span>Treasury</button>
     <button class="tab" data-panel="goals"><span class="ic">🎯</span>Goals &amp; Debt</button>
     <button class="tab" data-panel="reset"><span class="ic">📅</span>Weekly Reset</button>
     <button class="tab" data-panel="maintenance"><span class="ic">🛠️</span>Maintenance</button>
     <button class="tab" data-panel="playbooks"><span class="ic">🛡️</span>Playbooks</button>
     <button class="tab" data-panel="vault"><span class="ic">🔒</span>Vault</button>
+    <button class="tab" data-panel="howto"><span class="ic">❓</span>How To</button>
   </div>
 </nav>
 
 <main class="wrap">
 
-  <section class="panel active" id="dashboard">
+  <section class="panel" id="dashboard">
     <div class="section-head">
       <h2>Executive Dashboard</h2>
       <div class="sub">Your household at a glance. Every figure below flows automatically from the ledgers — enter your numbers once and the system does the math.</div>
@@ -363,6 +370,7 @@
         <span><span class="swatch" style="background:#2f5fa0"></span> Meal</span>
         <span><span class="swatch" style="background:#C59B27"></span> Routine</span>
         <span><span class="swatch" style="background:#6b4f9e"></span> Family</span>
+        <span><span class="swatch" style="background:#127a76"></span> Chore</span>
       </div>
     </div>
 
@@ -399,7 +407,7 @@
     </div>
   </section>
 
-  <section class="panel" id="treasury">
+  <section class="panel active" id="treasury">
     <div class="section-head">
       <h2>The Sovereign Treasury Ledger</h2>
       <div class="sub">A fixed-expenses-first flow: your non-negotiables are covered before a single dollar of surplus is allocated. Type into the <em>blue</em> fields; the <em>green</em> cells calculate for you.</div>
@@ -545,6 +553,19 @@
       <div id="resetList"></div>
       <div class="card-actions"><button class="btn btn-ghost btn-sm" onclick="addResetItem()">＋ Add agenda item</button></div>
     </div>
+
+    <div class="card">
+      <div class="card-title">🧹 Household Chores &amp; Task Delegation <span class="badge">Shows on Calendar</span></div>
+      <hr class="gold-rule">
+      <div class="card-note">This is where the "Task Delegation" step of your Sunday Reset actually lives. Assign a chore to a person and a day of the week — it repeats every week automatically and shows up on the <strong>Calendar</strong> tagged with their name, so nothing gets assigned twice or forgotten.</div>
+      <div class="tbl-scroll">
+        <table id="choreTable">
+          <thead><tr><th style="min-width:170px">Chore</th><th style="width:160px">Assigned To</th><th style="width:160px">Day of Week</th><th style="width:44px"></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="card-actions"><button class="btn btn-ghost btn-sm" onclick="addChore()">＋ Assign a chore</button></div>
+    </div>
   </section>
 
   <section class="panel" id="maintenance">
@@ -591,6 +612,58 @@
     </div>
   </section>
 
+  <section class="panel" id="howto">
+    <div class="section-head">
+      <h2>How to Use This Command Center</h2>
+      <div class="sub">A short walkthrough of every tab, in the order that makes sense to set up first. Come back here any time you need a refresher — nothing here changes your data.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🚦 Setup Order — Do These First</div>
+      <hr class="gold-rule">
+      <ol class="howto-steps">
+        <li><strong>Treasury.</strong> Enter every income source, then every fixed bill. Give each bill a <strong>Due Day</strong> (1–31) — that one number is what makes the Calendar and Paycheck Planner work automatically. Leave it at 0 for anything with no fixed date, like weekly groceries.</li>
+        <li><strong>Calendar → Pay Schedule.</strong> Add each paycheck: how often it lands (weekly, every 2 weeks, or monthly) and <em>one real pay date</em> you can point to. The app projects every future payday from that single date — see the FAQ below for exactly how.</li>
+        <li><strong>Dashboard.</strong> Nothing to enter here — it's your at-a-glance summary, calculated automatically from Treasury.</li>
+        <li><strong>Goals &amp; Debt.</strong> Set your Emergency Fund target, any Savings Goals, Sinking Funds for irregular costs, and your Debt Payoff strategy.</li>
+        <li><strong>Weekly Reset.</strong> Run the Sunday agenda, and use the Household Chores list to assign chores by day — assigned chores show up on the Calendar automatically, tagged with each person's name.</li>
+        <li><strong>Maintenance, Playbooks, Vault.</strong> Fill these in whenever you have a spare few minutes — nothing else depends on them.</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <div class="card-title">💵 How does it know when I get paid?</div>
+      <hr class="gold-rule">
+      <p>It doesn't guess — you tell it once, on the <strong>Calendar</strong> tab under <strong>Pay Schedule</strong>. For each paycheck you add three things: a name (like "Primary Paycheck"), how often it arrives, and <em>one real date you were actually paid</em> as the anchor.</p>
+      <p style="margin-top:10px">From that single anchor date, the app projects every future payday:</p>
+      <ul class="howto-list">
+        <li><strong>Weekly</strong> — a new payday every 7 days from your anchor.</li>
+        <li><strong>Every 2 weeks (biweekly)</strong> — a new payday every 14 days. Some months this lands 3 times instead of 2 — the Calendar and Paycheck Planner will show that extra check when it happens.</li>
+        <li><strong>Monthly</strong> — the same day of the month, every month, from your anchor.</li>
+      </ul>
+      <p style="margin-top:10px">If you have more than one income (a spouse's paycheck, a side hustle), add each as its own row in Pay Schedule — the Paycheck Planner combines them all.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🧾 How bills get matched to a paycheck</div>
+      <hr class="gold-rule">
+      <p>Every bill on Treasury with a Due Day gets assigned to <strong>the most recent paycheck that lands on or before that due date</strong> — in other words, whichever check's money is already in hand when the bill is actually due. The Paycheck Planner on the Calendar tab lists each paycheck with its bills underneath it, and shows what's left over after they're covered (in red if a check comes up short).</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🧹 Chores on the Calendar</div>
+      <hr class="gold-rule">
+      <p>On the Weekly Reset tab, the <strong>Household Chores &amp; Task Delegation</strong> list is where "Task Delegation" from the Sunday agenda actually happens. Type in a chore, who it's assigned to, and a day of the week — it repeats every week and appears on the Calendar automatically, labeled with that person's name, so everyone can see what they're responsible for at a glance.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🍽 Meal PDFs, printing &amp; backups</div>
+      <hr class="gold-rule">
+      <p>On the Calendar tab, add a Meal event and attach a PDF from Meal Builder Pro — it opens in one tap right from the calendar. PDFs are stored on this device only, so they aren't included in your JSON backup.</p>
+      <p style="margin-top:10px">Use <strong>🖨 Print calendar</strong> (on the Calendar tab) for a paper copy of the month, or <strong>🖨 Print / Save as PDF</strong> (bottom toolbar) for your full financial plan. Use <strong>⤓ Back up my data</strong> regularly — everything here lives only in this browser, on this device, so a backup file is the only way to move your data or protect it from a cleared browser.</p>
+    </div>
+  </section>
+
 </main>
 
 <div class="wrap">
@@ -600,7 +673,7 @@
     <button class="btn btn-ghost btn-sm" onclick="document.getElementById('importFile').click()">⤒ Restore backup</button>
     <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)">
     <div class="spacer"></div>
-    <button class="btn btn-ghost btn-sm" onclick="showWelcome()">✦ Welcome screen</button>
+    <button class="btn btn-ghost btn-sm" onclick="showWelcome()">❓ Quick Start</button>
     <button class="btn btn-ghost btn-sm" onclick="restoreDefaults()">↺ Load sample household</button>
     <button class="btn btn-ghost btn-sm" onclick="clearAll()" style="color:var(--danger)">🗑 Clear everything</button>
   </div>
@@ -623,8 +696,14 @@
       <h3>Welcome to your Command Center</h3>
     </div>
     <div class="mbody">
-      <p>This is your household&rsquo;s private financial operating system — treasury, savings, debt, maintenance, emergency playbooks, and a document vault, all in one calm place.</p>
+      <p>This is your household&rsquo;s private financial operating system — treasury, calendar, savings, debt, maintenance, emergency playbooks, and a document vault, all in one calm place. Start in this order:</p>
+      <ol class="howto-steps" style="margin:14px 0">
+        <li><strong>Treasury</strong> — enter income and bills first, with a Due Day on each bill.</li>
+        <li><strong>Calendar → Pay Schedule</strong> — tell it how often you're paid and one real pay date, so it knows exactly when your money lands.</li>
+        <li><strong>Dashboard, Goals &amp; Debt, Weekly Reset</strong> — everything else flows from there.</li>
+      </ol>
       <p>Everything you enter is saved <strong>only in this browser, on this device.</strong> Nothing is uploaded or shared. Use <strong>Back up my data</strong> regularly, and <strong>Print / Save as PDF</strong> to keep a copy on paper.</p>
+      <p style="margin-top:10px">Full instructions live any time on the <strong>❓ How To</strong> tab.</p>
       <div class="disc">This tool is for personal organization and education only — it is not financial, tax, or legal advice. Figures are estimates based on what you enter.</div>
       <button class="btn btn-green" onclick="dismissWelcome()">Enter the Command Center</button>
     </div>
@@ -699,7 +778,13 @@ const DEFAULTS=()=>({
     {task:'Calendar Sweep — align the week ahead',seg:'0–10 min',done:false},
     {task:'Treasury Audit — run the weekly strategic sweeps',seg:'10–25 min',done:false},
     {task:'Pantry Walkthrough — check inventory staples',seg:'25–35 min',done:false},
-    {task:'Task Delegation — assign chores & owners',seg:'35–45 min',done:false}
+    {task:'Task Delegation — assign chores below & confirm owners',seg:'35–45 min',done:false}
+  ],
+  chores:[
+    {id:'ch1',task:'Take out trash & recycling',person:'Dad',day:1},
+    {id:'ch2',task:'Empty the dishwasher',person:'Kids',day:2},
+    {id:'ch3',task:'Vacuum living areas',person:'Mom',day:4},
+    {id:'ch4',task:'Change bath towels',person:'Kids',day:6}
   ],
   maint:[
     {asset:'HVAC Compressor & Air Filters',action:'Replace filters, clear drain lines',interval:3,last:isoDaysAgo(120)},
@@ -735,8 +820,9 @@ function migrate(s){
   if(!s.debtStrategy)s.debtStrategy='avalanche';
   if(s.debtExtra==null)s.debtExtra=0;
   if(!s.sweeps)s.sweeps=[];
-  if(!s.pay)s.pay=d.pay;
-  if(!s.events)s.events=d.events;
+  if(!s.pay)s.pay=[];
+  if(!s.events)s.events=[];
+  if(!s.chores)s.chores=[];
   s.overhead.forEach(o=>{if(o.due===undefined)o.due=0;});
   if(s.lastBackup===undefined)s.lastBackup=null;
   return s;
@@ -1121,7 +1207,7 @@ function importData(e){
 }
 function restoreDefaults(){if(confirm('Load the sample household? This replaces your current data.')){state=DEFAULTS();save();renderAll();}}
 function clearAll(){if(confirm('Clear everything and start from a blank household? This cannot be undone.')){
-  state={income:[],overhead:[],pay:[],events:[],alloc:{reserves:30,equity:40,lifestyle:30},sweeps:[],goals:{emergency:{monthsTarget:3,saved:0},savings:[],sinking:[]},debts:[],debtStrategy:'avalanche',debtExtra:0,reset:[],maint:[],plays:[],vault:[],lastBackup:null};
+  state={income:[],overhead:[],pay:[],events:[],chores:[],alloc:{reserves:30,equity:40,lifestyle:30},sweeps:[],goals:{emergency:{monthsTarget:3,saved:0},savings:[],sinking:[]},debts:[],debtStrategy:'avalanche',debtExtra:0,reset:[],maint:[],plays:[],vault:[],lastBackup:null};
   save();renderAll();}}
 
 function showWelcome(){document.getElementById('welcome').classList.remove('hide');}
@@ -1215,9 +1301,14 @@ function collectOccurrences(start,end){
     while(cur<=stop){const dim=daysInMonth(cur.getFullYear(),cur.getMonth());const dd=new Date(cur.getFullYear(),cur.getMonth(),Math.min(+o.due,dim));if(dd>=start&&dd<=end)items.push({date:dd,type:'bill',title:o.category,amount:+o.cost||0});cur.setMonth(cur.getMonth()+1);}
   });
   state.events.forEach((ev,i)=>eventOccurrences(ev,start,end).forEach(d=>items.push({date:d,type:ev.type||'note',title:ev.title,evIndex:i,pdfId:ev.pdfId,fileName:ev.fileName})));
+  (state.chores||[]).forEach(c=>{
+    if(!c.task||c.day===''||c.day==null)return;
+    let cur=new Date(start);
+    while(cur<=end){if(cur.getDay()===+c.day)items.push({date:new Date(cur),type:'chore',title:c.task+(c.person?' — '+c.person:'')});cur=addDays(cur,1);}
+  });
   return items;
 }
-const CAL_ORDER={payday:0,bill:1,meal:2,routine:3,family:4,note:5};
+const CAL_ORDER={payday:0,bill:1,meal:2,chore:3,routine:4,family:5,note:6};
 function calChip(e){
   let label=e.title;
   if(e.type==='payday')label='＋ '+e.title+' '+money0(e.amount);
@@ -1243,7 +1334,7 @@ function renderCalMonth(){
   document.getElementById('calTitle').textContent=MONTHS[m]+' '+y;
 }
 function calWkRow(e){
-  const tag={payday:'Pay',bill:'Bill',meal:'Meal',routine:'Routine',family:'Family',note:'Note'}[e.type]||'Event';
+  const tag={payday:'Pay',bill:'Bill',meal:'Meal',routine:'Routine',family:'Family',chore:'Chore',note:'Note'}[e.type]||'Event';
   let right='';
   if(e.type==='payday')right=`<span class="amt">+${money0(e.amount)}</span>`;
   else if(e.type==='bill')right=`<span class="amt">${money0(e.amount)}</span>`;
@@ -1354,6 +1445,22 @@ function addEvent(type){
 }
 function delEvent(i){const e=state.events[i];if(e&&e.pdfId)idbDelete(e.pdfId);state.events.splice(i,1);save();renderCalendar();}
 
+/* ---- Household Chores / Task Delegation (Weekly Reset tab, shows on Calendar) ---- */
+const WEEKDAYS=[['0','Sunday'],['1','Monday'],['2','Tuesday'],['3','Wednesday'],['4','Thursday'],['5','Friday'],['6','Saturday']];
+function renderChores(){
+  const tb=document.querySelector('#choreTable tbody');
+  if(!tb)return;
+  tb.innerHTML=(state.chores||[]).map((c,i)=>`<tr>
+    <td><input value="${esc(c.task)}" onchange="updChore(${i},'task',this.value)" placeholder="e.g. Take out trash"></td>
+    <td><input value="${esc(c.person)}" onchange="updChore(${i},'person',this.value)" placeholder="Who's responsible"></td>
+    <td><select onchange="updChore(${i},'day',this.value)">${WEEKDAYS.map(w=>`<option value="${w[0]}" ${String(c.day)===w[0]?'selected':''}>${w[1]}</option>`).join('')}</select></td>
+    <td><button class="icon-btn" onclick="delChore(${i})">✕</button></td>
+  </tr>`).join('')||`<tr><td colspan="4" class="empty">No chores assigned yet — add one below.</td></tr>`;
+}
+function updChore(i,f,v){state.chores[i][f]=v;save();renderCalendar();}
+function addChore(){state.chores.push({id:'ch'+Date.now(),task:'',person:'',day:1});save();renderCalendar();}
+function delChore(i){state.chores.splice(i,1);save();renderCalendar();}
+
 /* ---- Meal PDF storage (IndexedDB — larger, stays on this device) ---- */
 let _db=null;
 function idb(){return new Promise((res,rej)=>{if(_db)return res(_db);const r=indexedDB.open('ph_meal_pdfs',1);r.onupgradeneeded=()=>{r.result.createObjectStore('pdfs');};r.onsuccess=()=>{_db=r.result;res(_db);};r.onerror=()=>rej(r.error);});}
@@ -1392,7 +1499,7 @@ function printCalendar(){
   setTimeout(()=>pc.classList.remove('printing'),600);
 }
 function renderCalendar(){
-  renderPay();renderEventList();
+  renderPay();renderEventList();renderChores();
   if(calView.mode==='week')renderCalWeek();else renderCalMonth();
   renderPaycheckPlanner();
 }
