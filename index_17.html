@@ -1,0 +1,1412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Provisioned Household · CFO Command Center</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231E4620'/%3E%3Ccircle cx='32' cy='32' r='27' fill='none' stroke='%23C9A84C' stroke-width='2'/%3E%3Ctext x='32' y='43' font-family='Georgia,serif' font-size='28' font-weight='700' fill='%23C9A84C' text-anchor='middle'%3EPH%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --green:#1E4620; --green-deep:#163517; --green-soft:#2c5a2e;
+    --gold:#C59B27; --gold-lt:#C9A84C; --gold-pale:#e6d9a8;
+    --cream:#F5F0E8; --cream-dk:#ece4d6;
+    --slate:#DCE6F1; --slate-dk:#b9cbe4;
+    --sage:#E2EFDA; --sage-dk:#c3ddb4;
+    --ink:#26301f; --muted:#6d7466;
+    --danger:#8f3a2f; --danger-bg:#f6e2dd;
+    --blue:#2f5fa0;
+    --radius:14px; --shadow:0 8px 30px rgba(30,70,32,.08); --shadow-lg:0 20px 50px rgba(30,70,32,.14);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:'Jost',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--cream);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased}
+  h1,h2,h3,h4,.serif{font-family:'Cormorant Garamond',Georgia,serif}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 22px}
+
+  header.masthead{background:linear-gradient(160deg,var(--green) 0%,var(--green-deep) 100%);color:var(--cream);position:relative;overflow:hidden;border-bottom:3px solid var(--gold)}
+  header.masthead::after{content:"";position:absolute;right:-120px;top:-120px;width:360px;height:360px;border:1px solid rgba(197,155,39,.25);border-radius:50%}
+  header.masthead::before{content:"";position:absolute;right:-40px;bottom:-160px;width:300px;height:300px;border:1px solid rgba(197,155,39,.15);border-radius:50%}
+  .mast-inner{display:flex;align-items:center;gap:22px;padding:30px 22px 26px;position:relative;z-index:2}
+  .monogram{flex:0 0 auto;width:66px;height:66px;border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;border-radius:50%;font-family:'Cormorant Garamond',serif;font-weight:700;font-size:1.6rem;color:var(--gold-pale);letter-spacing:1px}
+  .mast-title h1{font-size:2.5rem;font-weight:600;letter-spacing:.5px;line-height:1}
+  .mast-title .kicker{color:var(--gold-lt);text-transform:uppercase;letter-spacing:4px;font-size:.66rem;font-weight:500;margin-bottom:6px;font-family:'Jost',sans-serif}
+  .mast-title .tag{color:rgba(245,240,232,.72);font-size:.9rem;margin-top:4px;letter-spacing:.5px}
+
+  nav.tabs{background:var(--green-deep);position:sticky;top:0;z-index:50;border-bottom:1px solid rgba(197,155,39,.3);box-shadow:0 4px 18px rgba(0,0,0,.12)}
+  .tabs-inner{display:flex;flex-wrap:wrap;max-width:1180px;margin:0 auto}
+  .tab{background:none;border:none;cursor:pointer;color:rgba(245,240,232,.68);font-family:'Jost',sans-serif;font-size:.8rem;font-weight:500;letter-spacing:1.1px;text-transform:uppercase;padding:15px 18px;border-bottom:3px solid transparent;transition:.2s;display:flex;align-items:center;gap:8px}
+  .tab:hover{color:var(--cream);background:rgba(255,255,255,.03)}
+  .tab.active{color:var(--gold-pale);border-bottom-color:var(--gold)}
+  .tab .ic{font-size:1rem}
+
+  main{padding:34px 0 60px}
+  .panel{display:none;animation:fade .4s ease}
+  .panel.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .section-head{margin-bottom:22px}
+  .section-head h2{font-size:2.1rem;font-weight:600;color:var(--green);line-height:1.05}
+  .section-head .sub{color:var(--muted);font-size:.96rem;max-width:660px;margin-top:4px}
+
+  .card{background:#fff;border:1px solid var(--cream-dk);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;margin-bottom:22px}
+  .card-title{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:600;color:var(--green);display:flex;align-items:center;gap:10px;margin-bottom:4px;flex-wrap:wrap}
+  .card-title .badge{margin-left:auto;font-family:'Jost',sans-serif;font-size:.62rem;letter-spacing:1.5px;text-transform:uppercase;background:var(--sage);color:var(--green);padding:4px 10px;border-radius:20px;font-weight:600}
+  .card-note{color:var(--muted);font-size:.9rem;margin-bottom:16px}
+  .gold-rule{height:2px;background:linear-gradient(90deg,var(--gold),transparent);border:none;margin:2px 0 18px}
+
+  .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:18px;margin-bottom:8px}
+  .stat{background:#fff;border-radius:var(--radius);padding:22px;border:1px solid var(--cream-dk);box-shadow:var(--shadow);position:relative;overflow:hidden}
+  .stat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--gold)}
+  .stat .lbl{text-transform:uppercase;letter-spacing:1.5px;font-size:.66rem;color:var(--muted);font-weight:600}
+  .stat .val{font-family:'Cormorant Garamond',serif;font-size:2.3rem;font-weight:700;color:var(--green);line-height:1.1;margin-top:6px}
+  .stat .hint{font-size:.78rem;color:var(--muted);margin-top:2px}
+  .stat.accent{background:linear-gradient(155deg,var(--green),var(--green-deep));color:var(--cream)}
+  .stat.accent::before{background:var(--gold)}
+  .stat.accent .lbl{color:var(--gold-lt)}
+  .stat.accent .val{color:#fff}
+  .stat.accent .hint{color:rgba(245,240,232,.7)}
+
+  .solvency{border-radius:var(--radius);padding:16px 22px;font-weight:600;display:flex;align-items:center;gap:12px;margin-bottom:22px;font-size:1.02rem;letter-spacing:.3px}
+  .solvency.ok{background:var(--sage);color:var(--green);border:1px solid var(--sage-dk)}
+  .solvency.bad{background:var(--danger-bg);color:var(--danger);border:1px solid #e3b8ae}
+
+  .alloc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+  .alloc{border-radius:var(--radius);padding:20px;border:1px solid var(--cream-dk);background:var(--cream);position:relative}
+  .alloc .dot{width:12px;height:12px;border-radius:50%;display:inline-block;margin-right:8px}
+  .alloc h4{font-family:'Jost',sans-serif;font-size:.72rem;text-transform:uppercase;letter-spacing:1.4px;color:var(--muted);font-weight:600;display:flex;align-items:center}
+  .alloc .amt{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:700;color:var(--green);margin-top:8px}
+  .alloc .wk{font-size:.82rem;color:var(--muted);margin-top:2px}
+  .alloc .pctwrap{display:flex;align-items:center;gap:8px;margin-top:12px}
+  .alloc input[type=number]{width:64px}
+  .bar{height:7px;border-radius:6px;background:var(--cream-dk);margin-top:14px;overflow:hidden}
+  .bar>span{display:block;height:100%;border-radius:6px}
+
+  .tbl-scroll{overflow-x:auto;margin:0 -4px}
+  table{width:100%;border-collapse:collapse;min-width:560px}
+  th{text-align:left;font-family:'Jost',sans-serif;font-size:.64rem;text-transform:uppercase;letter-spacing:1.3px;color:var(--muted);font-weight:600;padding:0 10px 10px;border-bottom:2px solid var(--cream-dk)}
+  td{padding:7px 10px;vertical-align:middle;border-bottom:1px solid var(--cream-dk)}
+  tr:last-child td{border-bottom:none}
+  tfoot td{border-top:2px solid var(--gold);border-bottom:none;padding-top:12px;font-weight:600}
+  .foot-lbl{font-family:'Cormorant Garamond',serif;font-size:1.15rem;color:var(--green)}
+  .foot-val{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:700;color:var(--green);text-align:right}
+
+  input,select,textarea{font-family:'Jost',sans-serif;font-size:.9rem;color:var(--ink);border:1px solid var(--slate-dk);border-radius:8px;padding:7px 10px;width:100%;background:var(--slate);transition:.15s}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(197,155,39,.15);background:#fff}
+  .cell-output{background:var(--sage);border:1px solid var(--sage-dk);border-radius:8px;padding:7px 10px;font-weight:600;color:var(--green);text-align:right;font-variant-numeric:tabular-nums}
+  select{cursor:pointer}
+  td input[type=number]{text-align:right;font-variant-numeric:tabular-nums}
+  .legend{display:flex;gap:18px;flex-wrap:wrap;font-size:.76rem;color:var(--muted);margin-top:14px}
+  .legend span{display:flex;align-items:center;gap:6px}
+  .swatch{width:15px;height:15px;border-radius:4px;display:inline-block;border:1px solid rgba(0,0,0,.08)}
+
+  .btn{font-family:'Jost',sans-serif;cursor:pointer;border:none;border-radius:8px;font-weight:500;letter-spacing:.5px;padding:9px 18px;font-size:.85rem;transition:.18s;display:inline-flex;align-items:center;gap:7px}
+  .btn-gold{background:var(--gold);color:#fff}
+  .btn-gold:hover{background:var(--gold-lt);box-shadow:0 6px 16px rgba(197,155,39,.3)}
+  .btn-green{background:var(--green);color:var(--cream)}
+  .btn-green:hover{background:var(--green-soft)}
+  .btn-ghost{background:transparent;color:var(--green);border:1px solid var(--slate-dk)}
+  .btn-ghost:hover{border-color:var(--gold);color:var(--gold)}
+  .btn-sm{padding:5px 10px;font-size:.78rem}
+  .icon-btn{background:none;border:none;cursor:pointer;color:var(--muted);font-size:1.05rem;padding:4px 6px;border-radius:6px;line-height:1;transition:.15s}
+  .icon-btn:hover{color:var(--danger);background:var(--danger-bg)}
+  .card-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+  .toolbar .spacer{flex:1}
+
+  .check-row{display:flex;align-items:center;gap:14px;padding:13px 16px;border:1px solid var(--cream-dk);border-radius:10px;margin-bottom:10px;background:var(--cream);transition:.15s}
+  .check-row.done{background:var(--sage);border-color:var(--sage-dk)}
+  .check-row.done .ck-task input{text-decoration:line-through;color:var(--muted)}
+  .ck-box{flex:0 0 auto;width:24px;height:24px;border:2px solid var(--gold);border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.9rem;color:#fff;transition:.15s}
+  .check-row.done .ck-box{background:var(--green);border-color:var(--green)}
+  .ck-body{flex:1}
+  .ck-seg{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+  .seg-pill{display:inline-block;background:var(--gold-pale);color:var(--green-deep);font-size:.66rem;font-weight:600;padding:2px 9px;border-radius:20px;letter-spacing:.6px;margin-left:8px}
+
+  .pill{display:inline-block;padding:3px 11px;border-radius:20px;font-size:.72rem;font-weight:600;letter-spacing:.4px;white-space:nowrap}
+  .pill.active{background:var(--sage);color:var(--green)}
+  .pill.overdue{background:var(--danger-bg);color:var(--danger)}
+  .pill.soon{background:#f7edcf;color:#8a6d15}
+  .pill.lv1{background:var(--sage);color:var(--green)}
+  .pill.lv2{background:#f7edcf;color:#8a6d15}
+  .pill.lv3{background:var(--danger-bg);color:var(--danger)}
+
+  .mini-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+  .mini{border:1px solid var(--cream-dk);border-radius:12px;padding:16px 18px;background:var(--cream);position:relative}
+  .mini .folder{font-size:.68rem;text-transform:uppercase;letter-spacing:1.2px;color:var(--gold);font-weight:600}
+  .mini h4{font-family:'Cormorant Garamond',serif;font-size:1.3rem;color:var(--green);font-weight:600;margin:2px 0}
+  .mini .rm{position:absolute;top:10px;right:8px}
+  .mini label{font-size:.66rem;letter-spacing:1px;text-transform:uppercase;color:var(--gold);font-weight:600;display:block;margin-top:8px}
+
+  .empty{color:var(--muted);font-style:italic;padding:20px;text-align:center;font-size:.9rem}
+
+  .goalrow{border:1px solid var(--cream-dk);border-radius:12px;padding:16px 18px;margin-bottom:12px;background:var(--cream)}
+  .goalrow .gtop{display:flex;gap:10px;align-items:center;margin-bottom:10px}
+  .goalrow .gtop .gname{font-weight:600;background:transparent;border:none;color:var(--green);padding:2px 0;font-family:'Cormorant Garamond',serif;font-size:1.25rem}
+  .fldgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px}
+  .fld{display:block}
+  .fld>span{font-size:.64rem;letter-spacing:1px;text-transform:uppercase;color:var(--muted);font-weight:600;display:block;margin-bottom:3px}
+  .goalbar{height:9px;border-radius:6px;background:var(--cream-dk);overflow:hidden;margin-top:14px}
+  .goalbar>span{display:block;height:100%;border-radius:6px}
+  .goalmeta{font-size:.82rem;color:var(--muted);margin-top:7px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+  .goalmeta strong{color:var(--green)}
+
+  .reset-top{display:flex;align-items:center;gap:20px;flex-wrap:wrap;margin-bottom:20px}
+  .ring{position:relative;width:92px;height:92px;flex:0 0 auto}
+  .ring svg{transform:rotate(-90deg)}
+  .ring .pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-weight:700;font-size:1.4rem;color:var(--green)}
+
+  /* ---- Calendar ---- */
+  .cal-toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+  .cal-toolbar .spacer{flex:1}
+  .cal-nav{display:flex;gap:6px}
+  .cal-title{font-size:1.6rem;font-weight:600;color:var(--green);min-width:180px}
+  .cal-modes{display:flex;border:1px solid var(--slate-dk);border-radius:8px;overflow:hidden}
+  .cal-mode{background:#fff;color:var(--muted);border:none;border-radius:0;padding:6px 14px}
+  .cal-mode.active{background:var(--green);color:var(--cream)}
+  .cal-weekhead{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:6px}
+  .cal-weekhead div{text-align:center;font-size:.64rem;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);font-weight:600;padding:4px 0}
+  .cal-monthgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+  .cal-cell{background:var(--cream);border:1px solid var(--cream-dk);border-radius:10px;min-height:104px;padding:6px 6px 8px;display:flex;flex-direction:column;gap:3px;overflow:hidden}
+  .cal-cell.out{background:#faf7f1;opacity:.55}
+  .cal-cell.today{border-color:var(--gold);box-shadow:0 0 0 2px rgba(197,155,39,.25)}
+  .cal-daynum{font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:600;color:var(--green);line-height:1}
+  .cal-cell.today .cal-daynum{background:var(--gold);color:#fff;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:.85rem}
+  .cal-chip{font-size:.66rem;line-height:1.25;padding:2px 6px;border-radius:5px;color:#fff;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:default}
+  .cal-chip.payday{background:#1E4620}
+  .cal-chip.bill{background:#8f3a2f}
+  .cal-chip.meal{background:#2f5fa0;cursor:pointer}
+  .cal-chip.routine{background:#C59B27}
+  .cal-chip.family{background:#6b4f9e}
+  .cal-chip.note{background:#6d7466}
+  .cal-more{font-size:.62rem;color:var(--muted);padding-left:2px}
+  .cal-week{display:flex;flex-direction:column;gap:10px}
+  .cal-wkday{border:1px solid var(--cream-dk);border-radius:12px;padding:12px 16px;background:var(--cream)}
+  .cal-wkday.today{border-color:var(--gold);box-shadow:0 0 0 2px rgba(197,155,39,.2)}
+  .cal-wkday h4{font-family:'Cormorant Garamond',serif;font-size:1.25rem;color:var(--green);margin-bottom:8px;display:flex;align-items:baseline;gap:10px}
+  .cal-wkday h4 .dow{font-size:.7rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);font-family:'Jost',sans-serif}
+  .cal-wkrow{display:flex;align-items:center;gap:10px;padding:5px 0;border-top:1px dotted var(--cream-dk);font-size:.9rem}
+  .cal-wkrow:first-of-type{border-top:none}
+  .cal-tag{font-size:.6rem;text-transform:uppercase;letter-spacing:1px;font-weight:700;color:#fff;padding:2px 8px;border-radius:20px;flex:0 0 auto}
+  .cal-tag.payday{background:#1E4620}.cal-tag.bill{background:#8f3a2f}.cal-tag.meal{background:#2f5fa0}.cal-tag.routine{background:#C59B27}.cal-tag.family{background:#6b4f9e}.cal-tag.note{background:#6d7466}
+  .cal-wkrow .amt{margin-left:auto;font-weight:600;color:var(--green);font-variant-numeric:tabular-nums}
+  .cal-wkrow .open{color:var(--blue);cursor:pointer;font-size:.8rem;text-decoration:underline;margin-left:auto}
+  .cal-empty{color:var(--muted);font-style:italic;font-size:.82rem}
+  /* Paycheck planner */
+  .pcheck{border:1px solid var(--cream-dk);border-radius:12px;padding:16px 18px;margin-bottom:14px;background:var(--cream)}
+  .pcheck.short{border-color:#e3b8ae;background:var(--danger-bg)}
+  .pcheck-top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:4px}
+  .pcheck-top .pc-date{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:700;color:var(--green)}
+  .pcheck-top .pc-src{font-size:.72rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
+  .pcheck-top .pc-in{margin-left:auto;font-weight:600;color:var(--green)}
+  .pcheck-bill{display:flex;gap:10px;font-size:.86rem;padding:3px 0;border-top:1px dotted var(--cream-dk)}
+  .pcheck-bill .b-amt{margin-left:auto;font-variant-numeric:tabular-nums}
+  .pcheck-foot{display:flex;gap:10px;margin-top:8px;padding-top:8px;border-top:2px solid var(--gold);font-weight:600}
+  .pcheck-foot .lo{margin-left:auto}
+  .pcheck-foot .lo.neg{color:var(--danger)}
+  .pcheck-foot .lo.pos{color:var(--green)}
+  @media(max-width:640px){.cal-cell{min-height:78px}.cal-daynum{font-size:.9rem}.cal-chip{font-size:.6rem}.cal-title{font-size:1.3rem;min-width:120px}}
+  /* Print calendar */
+  #printCal{display:none}
+  @media print{#printCal.printing{display:block !important}
+    #printCal .pc-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+    #printCal .pc-wh{text-align:center;font-size:.6rem;text-transform:uppercase;letter-spacing:1px;color:#555;font-weight:700;padding:3px 0;border-bottom:1px solid #999}
+    #printCal .pc-cell{border:1px solid #ccc;min-height:88px;padding:3px 4px;font-size:.6rem;vertical-align:top}
+    #printCal .pc-cell.out{background:#f3f3f3;color:#aaa}
+    #printCal .pc-dn{font-weight:700;font-size:.72rem}
+    #printCal .pc-ev{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
+  footer{background:var(--green-deep);color:rgba(245,240,232,.55);text-align:center;padding:26px 22px;font-size:.8rem;letter-spacing:.4px;border-top:3px solid var(--gold)}
+  footer .brand{font-family:'Cormorant Garamond',serif;color:var(--gold-lt);font-size:1.2rem;letter-spacing:1px;display:block;margin-bottom:4px}
+  footer .disc{max-width:640px;margin:12px auto 0;font-size:.72rem;color:rgba(245,240,232,.4);line-height:1.5}
+
+  .save-flash{position:fixed;bottom:24px;right:24px;background:var(--green);color:var(--cream);padding:12px 20px;border-radius:10px;box-shadow:var(--shadow-lg);font-size:.85rem;opacity:0;transform:translateY(10px);transition:.3s;z-index:200;border:1px solid var(--gold)}
+  .save-flash.show{opacity:1;transform:none}
+
+  .backup-note{font-size:.8rem;color:var(--muted);padding:0 2px 22px}
+  .backup-note.warn{color:var(--danger)}
+
+  .overlay{position:fixed;inset:0;background:rgba(22,53,23,.78);backdrop-filter:blur(3px);z-index:300;display:flex;align-items:center;justify-content:center;padding:22px}
+  .overlay.hide{display:none}
+  .modal{background:var(--cream);border-radius:18px;max-width:520px;width:100%;box-shadow:var(--shadow-lg);border:1px solid var(--gold);overflow:hidden}
+  .modal .mhead{background:linear-gradient(160deg,var(--green),var(--green-deep));color:var(--cream);padding:28px 30px;text-align:center;border-bottom:3px solid var(--gold)}
+  .modal .mhead .mono{width:56px;height:56px;border:2px solid var(--gold);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-weight:700;font-size:1.3rem;color:var(--gold-pale);margin-bottom:10px}
+  .modal .mhead h3{font-size:1.8rem;font-weight:600}
+  .modal .mhead .k{color:var(--gold-lt);text-transform:uppercase;letter-spacing:3px;font-size:.62rem;font-family:'Jost',sans-serif}
+  .modal .mbody{padding:26px 30px 28px}
+  .modal .mbody p{font-size:.92rem;color:var(--ink);margin-bottom:12px}
+  .modal .mbody .disc{background:#fff;border:1px solid var(--cream-dk);border-left:4px solid var(--gold);border-radius:8px;padding:12px 14px;font-size:.8rem;color:var(--muted);margin:14px 0 20px}
+  .modal .mbody .btn{width:100%;justify-content:center;font-size:.95rem;padding:12px}
+
+  #printArea{display:none}
+
+  @media print{
+    header.masthead,nav.tabs,main,footer,.save-flash,.toolbar,.backup-note,.overlay{display:none !important}
+    body{background:#fff}
+    #printArea{display:block !important}
+  }
+  #printArea{padding:0}
+  .p-head{border-bottom:3px solid var(--gold);padding-bottom:14px;margin-bottom:18px}
+  .p-head h1{font-size:2rem;color:var(--green)}
+  .p-head .k{text-transform:uppercase;letter-spacing:3px;font-size:.66rem;color:var(--gold)}
+  .p-sec{margin-bottom:20px}
+  .p-sec h2{font-size:1.4rem;color:var(--green);border-bottom:1px solid var(--cream-dk);padding-bottom:5px;margin-bottom:10px}
+  .p-row{display:flex;justify-content:space-between;padding:4px 0;font-size:.92rem;border-bottom:1px dotted #ddd}
+  .p-row b{color:var(--green)}
+  .p-disc{font-size:.72rem;color:#888;margin-top:24px;border-top:1px solid #ddd;padding-top:10px}
+
+  @media(max-width:640px){
+    .mast-title h1{font-size:1.9rem}
+    .monogram{width:54px;height:54px;font-size:1.3rem}
+    .tab{padding:12px 12px;font-size:.7rem}
+    .tab .ic{display:none}
+    .section-head h2{font-size:1.7rem}
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="mast-inner">
+    <div class="monogram">PH</div>
+    <div class="mast-title">
+      <div class="kicker">The Provisioned Household</div>
+      <h1>CFO Command Center</h1>
+      <div class="tag">Quiet Stewardship &nbsp;·&nbsp; Systems Integrity &nbsp;·&nbsp; Sovereign Rest</div>
+    </div>
+  </div>
+</header>
+
+<nav class="tabs">
+  <div class="tabs-inner">
+    <button class="tab active" data-panel="dashboard"><span class="ic">🏛️</span>Dashboard</button>
+    <button class="tab" data-panel="calendar"><span class="ic">🗓️</span>Calendar</button>
+    <button class="tab" data-panel="treasury"><span class="ic">📊</span>Treasury</button>
+    <button class="tab" data-panel="goals"><span class="ic">🎯</span>Goals &amp; Debt</button>
+    <button class="tab" data-panel="reset"><span class="ic">📅</span>Weekly Reset</button>
+    <button class="tab" data-panel="maintenance"><span class="ic">🛠️</span>Maintenance</button>
+    <button class="tab" data-panel="playbooks"><span class="ic">🛡️</span>Playbooks</button>
+    <button class="tab" data-panel="vault"><span class="ic">🔒</span>Vault</button>
+  </div>
+</nav>
+
+<main class="wrap">
+
+  <section class="panel active" id="dashboard">
+    <div class="section-head">
+      <h2>Executive Dashboard</h2>
+      <div class="sub">Your household at a glance. Every figure below flows automatically from the ledgers — enter your numbers once and the system does the math.</div>
+    </div>
+    <div id="solvencyBar" class="solvency ok"></div>
+    <div class="stat-grid">
+      <div class="stat"><div class="lbl">Net Monthly Cash Flow</div><div class="val" id="dashIncome">$0</div><div class="hint">Total take-home income</div></div>
+      <div class="stat"><div class="lbl">Fixed Overhead</div><div class="val" id="dashOverhead">$0</div><div class="hint">The Four Walls + tithe, after pruning</div></div>
+      <div class="stat accent"><div class="lbl">The Sovereign Margin</div><div class="val" id="dashMargin">$0</div><div class="hint">True surplus for stewardship</div></div>
+      <div class="stat"><div class="lbl">Reclaimed Capital</div><div class="val" id="dashReclaimed">$0</div><div class="hint">Recovered from pruned subscriptions</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Strategic Allocations &amp; Weekly Sweeps <span class="badge">Auto-calculated</span></div>
+      <hr class="gold-rule">
+      <div class="card-note">Your Sovereign Margin is divided into three purposeful streams. Adjust the split on the Treasury tab — weekly transfer amounts update instantly.</div>
+      <div class="alloc-grid" id="dashAlloc"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Savings &amp; Debt at a Glance</div>
+      <hr class="gold-rule">
+      <div class="stat-grid" style="margin:0">
+        <div class="stat"><div class="lbl">Emergency Fund</div><div class="val" id="dashEF">—</div><div class="hint" id="dashEFhint">months of expenses covered</div></div>
+        <div class="stat"><div class="lbl">Total Saved</div><div class="val" id="dashSaved">$0</div><div class="hint">Across all funds &amp; goals</div></div>
+        <div class="stat"><div class="lbl">Total Debt</div><div class="val" id="dashDebt">$0</div><div class="hint">Remaining balances</div></div>
+        <div class="stat accent"><div class="lbl">Debt-Free Date</div><div class="val" id="dashDebtFree">—</div><div class="hint">At your current plan</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">This Week at a Glance</div>
+      <hr class="gold-rule">
+      <div class="stat-grid" style="margin:0">
+        <div class="stat"><div class="lbl">Weekly Reset</div><div class="val" id="dashReset">0 / 0</div><div class="hint">Sunday agenda complete</div></div>
+        <div class="stat"><div class="lbl">Maintenance Overdue</div><div class="val" id="dashOverdue">0</div><div class="hint">Assets needing attention</div></div>
+        <div class="stat"><div class="lbl">Emergency Playbooks</div><div class="val" id="dashPlays">0</div><div class="hint">Contingencies documented</div></div>
+        <div class="stat"><div class="lbl">Vault Documents</div><div class="val" id="dashVault">0</div><div class="hint">Vital records indexed</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="calendar">
+    <div class="section-head">
+      <h2>The Household Calendar</h2>
+      <div class="sub">One shared view of the whole household — paydays, bill due dates, meals, routines, and family events. Every bill with a Due Day and every paycheck flows here automatically, and the Paycheck Planner below shows exactly which check covers which expense.</div>
+    </div>
+
+    <div class="card">
+      <div class="cal-toolbar">
+        <div class="cal-nav">
+          <button class="btn btn-ghost btn-sm" onclick="calShift(-1)" title="Previous">‹</button>
+          <button class="btn btn-ghost btn-sm" onclick="calToday()">Today</button>
+          <button class="btn btn-ghost btn-sm" onclick="calShift(1)" title="Next">›</button>
+        </div>
+        <div class="cal-title serif" id="calTitle">—</div>
+        <div class="spacer"></div>
+        <div class="cal-modes">
+          <button class="btn btn-sm cal-mode active" id="calModeMonth" onclick="calSetMode('month')">Month</button>
+          <button class="btn btn-sm cal-mode" id="calModeWeek" onclick="calSetMode('week')">Week</button>
+        </div>
+        <button class="btn btn-gold btn-sm" onclick="printCalendar()">🖨 Print calendar</button>
+      </div>
+      <div id="calGrid"></div>
+      <div class="legend" style="margin-top:16px">
+        <span><span class="swatch" style="background:#1E4620"></span> Payday</span>
+        <span><span class="swatch" style="background:#8f3a2f"></span> Bill due</span>
+        <span><span class="swatch" style="background:#2f5fa0"></span> Meal</span>
+        <span><span class="swatch" style="background:#C59B27"></span> Routine</span>
+        <span><span class="swatch" style="background:#6b4f9e"></span> Family</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">💵 Paycheck Planner <span class="badge">Which check pays what</span></div>
+      <hr class="gold-rule">
+      <div class="card-note">Your income is matched to your bills by <em>when the money actually lands</em>. Each card is one paycheck in the month shown above; the bills under it are the ones due before your next check, so you always know what each paycheck has to cover.</div>
+      <div id="paycheckPlanner"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🗓️ Pay Schedule</div>
+      <hr class="gold-rule">
+      <div class="card-note">Add each earner and how often they're paid — weekly, every two weeks, or monthly. Enter one real pay date as the anchor and the calendar projects every future payday from it.</div>
+      <div class="tbl-scroll">
+        <table id="payTable">
+          <thead><tr><th style="min-width:150px">Paycheck / Earner</th><th style="width:150px">Frequency</th><th style="width:160px">A real pay date</th><th style="width:130px">Net amount</th><th style="width:44px"></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="card-actions"><button class="btn btn-ghost btn-sm" onclick="addPay()">＋ Add a paycheck</button></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📌 Events, Meals &amp; Routines</div>
+      <hr class="gold-rule">
+      <div class="card-note">Anything that isn't a bill or a paycheck: family plans, weekly routines, and meals. Attach a Meal Builder PDF to any meal and open it in one tap from the calendar. PDFs are stored on this device.</div>
+      <div id="eventList"></div>
+      <div class="card-actions">
+        <button class="btn btn-ghost btn-sm" onclick="addEvent('family')">＋ Family event</button>
+        <button class="btn btn-ghost btn-sm" onclick="addEvent('routine')">＋ Routine</button>
+        <button class="btn btn-ghost btn-sm" onclick="addEvent('meal')">＋ Meal</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="treasury">
+    <div class="section-head">
+      <h2>The Sovereign Treasury Ledger</h2>
+      <div class="sub">A fixed-expenses-first flow: your non-negotiables are covered before a single dollar of surplus is allocated. Type into the <em>blue</em> fields; the <em>green</em> cells calculate for you.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">💼 Income &amp; Operating Cash Flow</div>
+      <hr class="gold-rule">
+      <div class="tbl-scroll">
+        <table id="incomeTable">
+          <thead><tr><th style="min-width:180px">Cash Flow Source</th><th style="width:150px">Net Monthly</th><th style="width:170px">Source Type</th><th style="width:44px"></th></tr></thead>
+          <tbody></tbody>
+          <tfoot><tr><td class="foot-lbl">Total Net Cash Flow</td><td class="foot-val" id="incomeTotal">$0</td><td colspan="2"></td></tr></tfoot>
+        </table>
+      </div>
+      <div class="card-actions"><button class="btn btn-ghost btn-sm" onclick="addIncome()">＋ Add income source</button></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🛡️ Non-Negotiable Fixed Overhead — The Four Walls</div>
+      <hr class="gold-rule">
+      <div class="card-note">Mark any expense <strong>Prune (Cancel)</strong> to run a subscription-leak audit — its cost leaves overhead and is added to your Reclaimed Capital. Set a <strong>Due Day</strong> (1–31) and each bill flows automatically onto your Calendar and gets matched to the paycheck that covers it. Leave Due Day at 0 for costs with no fixed date (like weekly groceries).</div>
+      <div class="tbl-scroll">
+        <table id="overheadTable">
+          <thead><tr><th style="min-width:170px">Expense Category</th><th style="width:120px">Monthly Cost</th><th style="width:90px">Due Day</th><th style="width:170px">Expense Tier</th><th style="width:150px">Stewardship</th><th style="width:44px"></th></tr></thead>
+          <tbody></tbody>
+          <tfoot>
+            <tr><td class="foot-lbl">Reclaimed Capital</td><td class="foot-val" id="reclaimedTotal">$0</td><td colspan="4"></td></tr>
+            <tr><td class="foot-lbl">Total Fixed Overhead</td><td class="foot-val" id="overheadTotal">$0</td><td colspan="4"></td></tr>
+          </tfoot>
+        </table>
+      </div>
+      <div class="card-actions"><button class="btn btn-ghost btn-sm" onclick="addOverhead()">＋ Add expense</button></div>
+      <div class="legend">
+        <span><span class="swatch" style="background:var(--slate)"></span> Your input</span>
+        <span><span class="swatch" style="background:var(--sage)"></span> Calculated for you</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">⚖️ The Treasury Math Engine <span class="badge">Live</span></div>
+      <hr class="gold-rule">
+      <div class="stat-grid" style="margin-bottom:20px">
+        <div class="stat"><div class="lbl">Total Income</div><div class="val" id="engIncome">$0</div></div>
+        <div class="stat"><div class="lbl">− Fixed Overhead</div><div class="val" id="engOverhead">$0</div></div>
+        <div class="stat accent"><div class="lbl">= Sovereign Margin</div><div class="val" id="engMargin">$0</div></div>
+      </div>
+      <div id="engSolvency" class="solvency ok"></div>
+      <div class="card-note" style="margin-top:18px"><strong>Set your allocation split</strong> — the three streams must total 100%.</div>
+      <div class="alloc-grid" id="treasuryAlloc"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🔁 Sweep Log — Planned vs. Actual <span class="badge">This month</span></div>
+      <hr class="gold-rule">
+      <div class="card-note">Plans are only as good as follow-through. Log each transfer you actually make; the tracker compares it to your planned monthly allocation.</div>
+      <div class="stat-grid" id="sweepStats" style="margin-bottom:18px"></div>
+      <div class="tbl-scroll">
+        <table id="sweepTable">
+          <thead><tr><th style="width:150px">Date</th><th style="width:170px">Stream</th><th style="width:130px">Amount</th><th style="min-width:150px">Note</th><th style="width:44px"></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="card-actions"><button class="btn btn-ghost btn-sm" onclick="addSweep()">＋ Log a transfer</button></div>
+    </div>
+  </section>
+
+  <section class="panel" id="goals">
+    <div class="section-head">
+      <h2>Goals, Funds &amp; Debt Freedom</h2>
+      <div class="sub">Where your Reserves and Equity streams are actually headed — an emergency fund, sinking funds for irregular costs, named savings goals, and a payoff plan that gives you a real debt-free date.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">⛑️ Emergency Fund</div>
+      <hr class="gold-rule">
+      <div class="card-note">The foundation of a provisioned home. Target is set as a chosen number of months of your fixed overhead.</div>
+      <div id="emergencyBox"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🎯 Savings Goals</div>
+      <hr class="gold-rule">
+      <div id="savingsList"></div>
+      <div class="card-actions"><button class="btn btn-ghost btn-sm" onclick="addSavings()">＋ Add a savings goal</button></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🪣 Sinking Funds <span class="badge">Irregular costs</span></div>
+      <hr class="gold-rule">
+      <div class="card-note">The expenses that break most budgets — insurance, holidays, annual fees. Set a target and a due date; the monthly set-aside is calculated for you.</div>
+      <div id="sinkingList"></div>
+      <div class="goalmeta" id="sinkingTotal" style="padding:0 2px"></div>
+      <div class="card-actions"><button class="btn btn-ghost btn-sm" onclick="addSinking()">＋ Add a sinking fund</button></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">💳 Debt Payoff Planner</div>
+      <hr class="gold-rule">
+      <div class="fldgrid" style="margin-bottom:16px;max-width:520px">
+        <label class="fld"><span>Strategy</span>
+          <select id="debtStrategy" onchange="setDebtStrategy(this.value)">
+            <option value="avalanche">Avalanche — highest interest first</option>
+            <option value="snowball">Snowball — smallest balance first</option>
+          </select>
+        </label>
+        <label class="fld"><span>Extra monthly payment</span>
+          <input type="number" id="debtExtra" min="0" step="10" onchange="setDebtExtra(this.value)">
+        </label>
+      </div>
+      <div class="tbl-scroll">
+        <table id="debtTable">
+          <thead><tr><th style="min-width:150px">Debt</th><th style="width:130px">Balance</th><th style="width:110px">APR %</th><th style="width:130px">Min Payment</th><th style="width:120px">Paid Off</th><th style="width:44px"></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="card-actions"><button class="btn btn-ghost btn-sm" onclick="addDebt()">＋ Add a debt</button></div>
+      <div class="stat-grid" id="debtStats" style="margin-top:20px"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="reset">
+    <div class="section-head">
+      <h2>The Sunday Executive Reset</h2>
+      <div class="sub">A 45-minute weekly family meeting that restores the system rather than rebuilding it. Work the agenda top to bottom, then start the week at rest.</div>
+    </div>
+    <div class="card">
+      <div class="reset-top">
+        <div class="ring">
+          <svg width="92" height="92" viewBox="0 0 92 92">
+            <circle cx="46" cy="46" r="40" fill="none" stroke="#ece4d6" stroke-width="8"/>
+            <circle id="resetRing" cx="46" cy="46" r="40" fill="none" stroke="#C59B27" stroke-width="8" stroke-linecap="round" stroke-dasharray="251.2" stroke-dashoffset="251.2"/>
+          </svg>
+          <div class="pct" id="resetPct">0%</div>
+        </div>
+        <div>
+          <div class="card-title" style="margin:0">Weekly Reset Agenda</div>
+          <div class="card-note" style="margin:2px 0 0" id="resetSummary">0 of 0 segments complete</div>
+        </div>
+        <div class="spacer" style="flex:1"></div>
+        <button class="btn btn-ghost btn-sm" onclick="resetChecklist()">↺ Start a fresh week</button>
+      </div>
+      <div id="resetList"></div>
+      <div class="card-actions"><button class="btn btn-ghost btn-sm" onclick="addResetItem()">＋ Add agenda item</button></div>
+    </div>
+  </section>
+
+  <section class="panel" id="maintenance">
+    <div class="section-head">
+      <h2>Preventive Infrastructure Logs</h2>
+      <div class="sub">Track the systems that keep a home running so small routines replace emergency repairs. Next-due dates and alerts calculate automatically from your last service date.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">🛠️ Asset Maintenance Register</div>
+      <hr class="gold-rule">
+      <div class="tbl-scroll">
+        <table id="maintTable">
+          <thead><tr><th style="min-width:170px">Asset Domain</th><th style="min-width:170px">Preventive Action</th><th style="width:120px">Interval (mo.)</th><th style="width:150px">Last Service</th><th style="width:130px">Next Due</th><th style="width:120px">Status</th><th style="width:44px"></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="card-actions"><button class="btn btn-ghost btn-sm" onclick="addMaint()">＋ Add asset</button></div>
+    </div>
+  </section>
+
+  <section class="panel" id="playbooks">
+    <div class="section-head">
+      <h2>Risk Registry &amp; Escalation Playbooks</h2>
+      <div class="sub">Quick-action contingencies so the household knows exactly what to do — organized by escalation level, calm and ready before anything happens.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">🛡️ Emergency Contingencies</div>
+      <hr class="gold-rule">
+      <div class="mini-grid" id="playList"></div>
+      <div class="card-actions"><button class="btn btn-ghost btn-sm" onclick="addPlay()">＋ Add playbook</button></div>
+    </div>
+  </section>
+
+  <section class="panel" id="vault">
+    <div class="section-head">
+      <h2>Master Document Vault</h2>
+      <div class="sub">A beautifully organized index so any vital record can be located in under 60 seconds. This tracks <em>where</em> documents live — never store raw sensitive numbers here.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">🔒 Vault Directory</div>
+      <hr class="gold-rule">
+      <div class="mini-grid" id="vaultList"></div>
+      <div class="card-actions"><button class="btn btn-ghost btn-sm" onclick="addVault()">＋ Add document</button></div>
+    </div>
+  </section>
+
+</main>
+
+<div class="wrap">
+  <div class="toolbar">
+    <button class="btn btn-gold btn-sm" onclick="printPlan()">🖨 Print / Save as PDF</button>
+    <button class="btn btn-green btn-sm" onclick="exportData()">⤓ Back up my data</button>
+    <button class="btn btn-ghost btn-sm" onclick="document.getElementById('importFile').click()">⤒ Restore backup</button>
+    <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)">
+    <div class="spacer"></div>
+    <button class="btn btn-ghost btn-sm" onclick="showWelcome()">✦ Welcome screen</button>
+    <button class="btn btn-ghost btn-sm" onclick="restoreDefaults()">↺ Load sample household</button>
+    <button class="btn btn-ghost btn-sm" onclick="clearAll()" style="color:var(--danger)">🗑 Clear everything</button>
+  </div>
+  <div class="backup-note" id="backupNote"></div>
+</div>
+
+<footer>
+  <span class="brand">The Provisioned Household</span>
+  Your data is saved privately in this browser on your own device — nothing is uploaded anywhere. Back up regularly so a cleared browser never costs you your work.
+  <div class="disc">This tool is provided for personal organization and educational purposes only. It is not financial, investment, tax, or legal advice. Figures are estimates based on the information you enter. Consult a qualified professional before making financial decisions.</div>
+</footer>
+
+<div class="save-flash" id="flash">Saved ✓</div>
+
+<div class="overlay" id="welcome">
+  <div class="modal">
+    <div class="mhead">
+      <div class="mono">PH</div>
+      <div class="k">The Provisioned Household</div>
+      <h3>Welcome to your Command Center</h3>
+    </div>
+    <div class="mbody">
+      <p>This is your household&rsquo;s private financial operating system — treasury, savings, debt, maintenance, emergency playbooks, and a document vault, all in one calm place.</p>
+      <p>Everything you enter is saved <strong>only in this browser, on this device.</strong> Nothing is uploaded or shared. Use <strong>Back up my data</strong> regularly, and <strong>Print / Save as PDF</strong> to keep a copy on paper.</p>
+      <div class="disc">This tool is for personal organization and education only — it is not financial, tax, or legal advice. Figures are estimates based on what you enter.</div>
+      <button class="btn btn-green" onclick="dismissWelcome()">Enter the Command Center</button>
+    </div>
+  </div>
+</div>
+
+<div id="printArea"></div>
+<div id="printCal"></div>
+<input type="file" id="mealPdfInput" accept="application/pdf" style="display:none" onchange="handleMealPdf(event)">
+
+<script>
+const KEY='provisioned_household_v2';
+const money=n=>'$'+ (Math.round(n*100)/100).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const money0=n=>'$'+ Math.round(n).toLocaleString('en-US');
+const NUM_FIELDS=new Set(['amount','cost','interval','target','saved','balance','apr','min','due']);
+
+function isoDaysAgo(d){const t=new Date();t.setDate(t.getDate()-d);return t.toISOString().slice(0,10);}
+function isoMonthsAhead(m){const t=new Date();t.setMonth(t.getMonth()+m);return t.toISOString().slice(0,10);}
+function isoThisMonth(day){const t=new Date();t.setDate(day);return t.toISOString().slice(0,10);}
+function isoMostRecentWeekday(wd){const t=new Date();t.setHours(0,0,0,0);const diff=(t.getDay()-wd+7)%7;t.setDate(t.getDate()-diff);return t.toISOString().slice(0,10);}
+
+const DEFAULTS=()=>({
+  income:[
+    {source:'Primary W-2 Salary',amount:4200,type:'Primary'},
+    {source:'Side-Hustle Income',amount:800,type:'Secondary/Side-Hustle'}
+  ],
+  overhead:[
+    {category:'Tithe (10%)',cost:500,tier:'10% Tithe',action:'Keep (Essential)',due:1},
+    {category:'Rent or Mortgage',cost:1800,tier:'Shelter (Wall 1)',action:'Keep (Essential)',due:1},
+    {category:'Groceries',cost:650,tier:'Food (Wall 2)',action:'Keep (Essential)',due:0},
+    {category:'Electric / Gas / Water',cost:340,tier:'Utilities (Wall 3)',action:'Keep (Essential)',due:18},
+    {category:'Auto & Fuel',cost:410,tier:'Transportation (Wall 4)',action:'Keep (Essential)',due:12},
+    {category:'Health Insurance',cost:300,tier:'Healthcare Insurances',action:'Keep (Essential)',due:5},
+    {category:'Streaming Bundle',cost:0,tier:'Debt Minimums',action:'Prune (Cancel)',due:22}
+  ],
+  pay:[
+    {name:'Primary Paycheck',freq:'biweekly',anchor:isoMostRecentWeekday(5),amount:1615},
+    {name:'Side-Hustle',freq:'monthly',anchor:isoThisMonth(20),amount:800}
+  ],
+  events:[
+    {id:'ev1',title:'Sunday Executive Reset',date:isoMostRecentWeekday(0),type:'routine',recur:'weekly',notes:'45-min family meeting'},
+    {id:'ev2',title:'Trash & recycling out',date:isoMostRecentWeekday(1),type:'routine',recur:'weekly',notes:''},
+    {id:'ev3',title:'Family movie night',date:isoMostRecentWeekday(5),type:'family',recur:'weekly',notes:''},
+    {id:'ev4',title:'Freezer lasagna night',date:isoThisMonth(new Date().getDate()+2>28?28:new Date().getDate()+2),type:'meal',recur:'none',notes:'Layer 4 emergency dinner',pdfId:null,fileName:''}
+  ],
+  alloc:{reserves:30,equity:40,lifestyle:30},
+  sweeps:[
+    {date:isoThisMonth(3),stream:'Reserves',amount:69.23,note:'Weekly sweep'},
+    {date:isoThisMonth(10),stream:'Equity',amount:92.31,note:'Weekly sweep'},
+    {date:isoThisMonth(10),stream:'Lifestyle',amount:69.23,note:'Weekly sweep'}
+  ],
+  goals:{
+    emergency:{monthsTarget:3,saved:2500},
+    savings:[
+      {name:'Family Vacation Fund',target:3000,saved:750,date:''},
+      {name:'New Appliance Reserve',target:1500,saved:400,date:''}
+    ],
+    sinking:[
+      {name:'Auto Insurance (6-mo premium)',target:720,saved:240,due:isoMonthsAhead(4)},
+      {name:'Christmas & Gifts',target:1200,saved:300,due:isoMonthsAhead(5)},
+      {name:'Annual Home Maintenance',target:2000,saved:600,due:isoMonthsAhead(8)}
+    ]
+  },
+  debts:[
+    {name:'Credit Card',balance:3200,apr:22.9,min:95},
+    {name:'Auto Loan',balance:8400,apr:6.4,min:265},
+    {name:'Student Loan',balance:11500,apr:4.9,min:130}
+  ],
+  debtStrategy:'avalanche',
+  debtExtra:150,
+  reset:[
+    {task:'Calendar Sweep — align the week ahead',seg:'0–10 min',done:false},
+    {task:'Treasury Audit — run the weekly strategic sweeps',seg:'10–25 min',done:false},
+    {task:'Pantry Walkthrough — check inventory staples',seg:'25–35 min',done:false},
+    {task:'Task Delegation — assign chores & owners',seg:'35–45 min',done:false}
+  ],
+  maint:[
+    {asset:'HVAC Compressor & Air Filters',action:'Replace filters, clear drain lines',interval:3,last:isoDaysAgo(120)},
+    {asset:'Smoke & CO Detectors',action:'Test alarms, replace batteries',interval:6,last:isoDaysAgo(40)},
+    {asset:'Water Heater',action:'Flush tank, inspect anode rod',interval:12,last:isoDaysAgo(300)},
+    {asset:'Gutters & Downspouts',action:'Clear debris, check flow',interval:6,last:isoDaysAgo(200)}
+  ],
+  plays:[
+    {scenario:'Local Outage — under 24 hours',level:'Level 1 (Local <24h)',vectors:'Power, lighting, phone charge',assets:'Flashlights, power bank, cooler'},
+    {scenario:'Regional Grid Outage — 1 to 7 days',level:'Level 2 (Regional 1-7 days)',vectors:'Power grid, water, fuel, comms',assets:'2000Wh solar generator, 28gal potable water'},
+    {scenario:'Immediate Evacuation — under 15 min',level:'Level 3 (Immediate <15m)',vectors:'Personal safety, documents, transport',assets:'Go-bags, vault copies, full fuel tank'}
+  ],
+  vault:[
+    {name:'Passports & Birth Certificates',folder:'Vital Identity',type:'Physical Original',location:'Fireproof Safe — Shelf A'},
+    {name:'Deeds, Titles & Estate Docs',folder:'Legal Estate & Titles',type:'Certified Copy',location:'Fireproof Safe — Shelf B'},
+    {name:'Insurance Policies',folder:'Protection & Insurance',type:'Encrypted PDF',location:'ProtonDrive — Household vault'}
+  ],
+  lastBackup:null
+});
+
+let state=load();
+function load(){
+  try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.income){return migrate(s);}}catch(e){}
+  return DEFAULTS();
+}
+function migrate(s){
+  const d=DEFAULTS();
+  if(!s.goals)s.goals=d.goals;
+  if(!s.goals.emergency)s.goals.emergency=d.goals.emergency;
+  if(!s.goals.savings)s.goals.savings=[];
+  if(!s.goals.sinking)s.goals.sinking=[];
+  if(!s.debts)s.debts=[];
+  if(!s.debtStrategy)s.debtStrategy='avalanche';
+  if(s.debtExtra==null)s.debtExtra=0;
+  if(!s.sweeps)s.sweeps=[];
+  if(!s.pay)s.pay=d.pay;
+  if(!s.events)s.events=d.events;
+  s.overhead.forEach(o=>{if(o.due===undefined)o.due=0;});
+  if(s.lastBackup===undefined)s.lastBackup=null;
+  return s;
+}
+let saveTimer;
+function save(flash=true){
+  localStorage.setItem(KEY,JSON.stringify(state));
+  if(flash){clearTimeout(saveTimer);const f=document.getElementById('flash');f.classList.add('show');saveTimer=setTimeout(()=>f.classList.remove('show'),1100);}
+}
+
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');
+  document.getElementById(t.dataset.panel).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}));
+
+function calc(){
+  const income=state.income.reduce((s,r)=>s+(+r.amount||0),0);
+  const reclaimed=state.overhead.filter(r=>r.action==='Prune (Cancel)').reduce((s,r)=>s+(+r.cost||0),0);
+  const overhead=state.overhead.reduce((s,r)=>s+(+r.cost||0),0)-reclaimed;
+  const margin=income-overhead;
+  const a=state.alloc;
+  const mk=p=>{const m=margin*(p/100);return{monthly:m,weekly:m*12/52};};
+  return{income,reclaimed,overhead,margin,reserves:mk(a.reserves),equity:mk(a.equity),lifestyle:mk(a.lifestyle)};
+}
+
+const ALLOC_META={
+  reserves:{name:'Emergency Reserves',color:'#8f3a2f'},
+  equity:{name:'Equity & Wealth',color:'#2f5fa0'},
+  lifestyle:{name:'Lifestyle Margin',color:'#C59B27'}
+};
+function renderAlloc(container,editable){
+  const c=calc();const a=state.alloc;
+  const total=a.reserves+a.equity+a.lifestyle;
+  container.innerHTML=['reserves','equity','lifestyle'].map(k=>{
+    const m=ALLOC_META[k];const d=c[k];
+    return `<div class="alloc">
+      <h4><span class="dot" style="background:${m.color}"></span>${m.name}</h4>
+      <div class="amt">${money(d.monthly)}<span style="font-size:.9rem;color:var(--muted)"> /mo</span></div>
+      <div class="wk">Weekly sweep: <strong>${money(d.weekly)}</strong></div>
+      <div class="bar"><span style="width:${Math.min(100,a[k])}%;background:${m.color}"></span></div>
+      ${editable?`<div class="pctwrap"><input type="number" min="0" max="100" value="${a[k]}" onchange="setAlloc('${k}',this.value)"> <span style="color:var(--muted);font-size:.85rem">% of margin</span></div>`:`<div class="wk" style="margin-top:8px">${a[k]}% of margin</div>`}
+    </div>`;
+  }).join('') + (editable?`<div style="grid-column:1/-1;font-size:.82rem;color:${total===100?'var(--muted)':'var(--danger)'};font-weight:600">Allocation total: ${total}% ${total===100?'✓ balanced':'— should equal 100%'}</div>`:'');
+}
+function setAlloc(k,v){state.alloc[k]=+v||0;save();renderAll();}
+
+const INCOME_TYPES=['Primary','Secondary/Side-Hustle','Passive'];
+function renderIncome(){
+  const tb=document.querySelector('#incomeTable tbody');
+  tb.innerHTML=state.income.map((r,i)=>`<tr>
+    <td><input value="${esc(r.source)}" onchange="upd('income',${i},'source',this.value)" placeholder="e.g. Primary Salary"></td>
+    <td><input type="number" step="0.01" value="${r.amount}" onchange="upd('income',${i},'amount',this.value)"></td>
+    <td><select onchange="upd('income',${i},'type',this.value)">${INCOME_TYPES.map(t=>`<option ${t===r.type?'selected':''}>${t}</option>`).join('')}</select></td>
+    <td><button class="icon-btn" title="Remove" onclick="del('income',${i})">✕</button></td>
+  </tr>`).join('')||`<tr><td colspan="4" class="empty">No income sources yet — add one below.</td></tr>`;
+  document.getElementById('incomeTotal').textContent=money(calc().income);
+}
+function addIncome(){state.income.push({source:'',amount:0,type:'Primary'});save();renderAll();}
+
+const TIERS=['10% Tithe','Shelter (Wall 1)','Food (Wall 2)','Utilities (Wall 3)','Transportation (Wall 4)','Healthcare Insurances','Debt Minimums'];
+const ACTIONS=['Keep (Essential)','Audit (Negotiate)','Prune (Cancel)'];
+function renderOverhead(){
+  const tb=document.querySelector('#overheadTable tbody');
+  tb.innerHTML=state.overhead.map((r,i)=>{
+    const pruned=r.action==='Prune (Cancel)';
+    return `<tr style="${pruned?'opacity:.6':''}">
+    <td><input value="${esc(r.category)}" onchange="upd('overhead',${i},'category',this.value)" placeholder="e.g. Rent"></td>
+    <td><input type="number" step="0.01" value="${r.cost}" onchange="upd('overhead',${i},'cost',this.value)"></td>
+    <td><input type="number" min="0" max="31" step="1" value="${r.due||0}" title="Day of month it's due (0 = no fixed date)" onchange="upd('overhead',${i},'due',this.value)"></td>
+    <td><select onchange="upd('overhead',${i},'tier',this.value)">${TIERS.map(t=>`<option ${t===r.tier?'selected':''}>${t}</option>`).join('')}</select></td>
+    <td><select onchange="upd('overhead',${i},'action',this.value)">${ACTIONS.map(t=>`<option ${t===r.action?'selected':''}>${t}</option>`).join('')}</select></td>
+    <td><button class="icon-btn" title="Remove" onclick="del('overhead',${i})">✕</button></td>
+  </tr>`;}).join('')||`<tr><td colspan="6" class="empty">No expenses yet — add one below.</td></tr>`;
+  const c=calc();
+  document.getElementById('overheadTotal').textContent=money(c.overhead);
+  document.getElementById('reclaimedTotal').textContent=money(c.reclaimed);
+}
+function addOverhead(){state.overhead.push({category:'',cost:0,tier:'Utilities (Wall 3)',action:'Keep (Essential)',due:0});save();renderAll();}
+
+function renderEngine(){
+  const c=calc();
+  document.getElementById('engIncome').textContent=money(c.income);
+  document.getElementById('engOverhead').textContent=money(c.overhead);
+  document.getElementById('engMargin').textContent=money(c.margin);
+  const solvent=c.margin>=0;
+  ['engSolvency','solvencyBar'].forEach(id=>{
+    const el=document.getElementById(id);
+    el.className='solvency '+(solvent?'ok':'bad');
+    el.innerHTML=solvent
+      ? `<span style="font-size:1.2rem">✅</span> Allocations balanced &amp; solvent — your margin is ${money(c.margin)} per month.`
+      : `<span style="font-size:1.2rem">❌</span> System deficit of ${money(Math.abs(c.margin))} — reduce overhead or prune subscriptions.`;
+  });
+}
+
+const STREAMS=['Reserves','Equity','Lifestyle'];
+function sameMonth(iso){const d=new Date(iso);const n=new Date();return d.getFullYear()===n.getFullYear()&&d.getMonth()===n.getMonth();}
+function renderSweeps(){
+  const c=calc();
+  const planned={Reserves:c.reserves.monthly,Equity:c.equity.monthly,Lifestyle:c.lifestyle.monthly};
+  const actual={Reserves:0,Equity:0,Lifestyle:0};
+  state.sweeps.forEach(s=>{if(sameMonth(s.date)&&actual[s.stream]!=null)actual[s.stream]+=(+s.amount||0);});
+  document.getElementById('sweepStats').innerHTML=STREAMS.map(st=>{
+    const p=planned[st],a=actual[st];const ok=a>=p-0.005;
+    const pill=ok?'<span class="pill active">On track</span>':`<span class="pill soon">${money(p-a)} to go</span>`;
+    return `<div class="stat"><div class="lbl">${st}</div><div class="val" style="font-size:1.7rem">${money0(a)}</div><div class="hint">of ${money0(p)} planned &nbsp; ${pill}</div></div>`;
+  }).join('');
+  const tb=document.querySelector('#sweepTable tbody');
+  const rows=[...state.sweeps].map((s,i)=>({s,i})).sort((x,y)=>(y.s.date||'').localeCompare(x.s.date||''));
+  tb.innerHTML=rows.map(({s,i})=>`<tr>
+    <td><input type="date" value="${s.date||''}" onchange="upd('sweeps',${i},'date',this.value)"></td>
+    <td><select onchange="upd('sweeps',${i},'stream',this.value)">${STREAMS.map(t=>`<option ${t===s.stream?'selected':''}>${t}</option>`).join('')}</select></td>
+    <td><input type="number" step="0.01" value="${s.amount}" onchange="upd('sweeps',${i},'amount',this.value)"></td>
+    <td><input value="${esc(s.note)}" onchange="upd('sweeps',${i},'note',this.value)" placeholder="optional"></td>
+    <td><button class="icon-btn" onclick="del('sweeps',${i})">✕</button></td>
+  </tr>`).join('')||`<tr><td colspan="5" class="empty">No transfers logged this month yet — log one below.</td></tr>`;
+}
+function addSweep(){state.sweeps.push({date:new Date().toISOString().slice(0,10),stream:'Reserves',amount:0,note:''});save();renderSweeps();}
+
+function progressBar(saved,target,color){
+  const pct=target>0?Math.min(100,saved/target*100):0;
+  return `<div class="goalbar"><span style="width:${pct}%;background:${color||'var(--gold)'}"></span></div>`;
+}
+function monthsUntil(dateStr){
+  if(!dateStr)return null;
+  const d=new Date(dateStr),n=new Date();
+  let m=(d.getFullYear()-n.getFullYear())*12+(d.getMonth()-n.getMonth());
+  return Math.max(1,m);
+}
+function renderEmergency(){
+  const c=calc();const ef=state.goals.emergency;
+  const target=c.overhead*(+ef.monthsTarget||0);
+  const covered=c.overhead>0?ef.saved/c.overhead:0;
+  document.getElementById('emergencyBox').innerHTML=`
+    <div class="fldgrid" style="max-width:520px;margin-bottom:4px">
+      <label class="fld"><span>Months of overhead to hold</span><input type="number" min="1" step="1" value="${ef.monthsTarget}" onchange="setEmMonths(this.value)"></label>
+      <label class="fld"><span>Currently saved</span><input type="number" min="0" step="1" value="${ef.saved}" onchange="setEmSaved(this.value)"></label>
+      <label class="fld"><span>Target (auto)</span><div class="cell-output">${money0(target)}</div></label>
+    </div>
+    ${progressBar(ef.saved,target,'#8f3a2f')}
+    <div class="goalmeta"><span><strong>${money0(ef.saved)}</strong> of ${money0(target)}</span><span>${covered.toFixed(1)} months of expenses covered</span></div>`;
+}
+function setEmMonths(v){state.goals.emergency.monthsTarget=parseFloat(v)||0;save();renderEmergency();renderDashboard();}
+function setEmSaved(v){state.goals.emergency.saved=parseFloat(v)||0;save();renderEmergency();renderDashboard();}
+
+function renderSavings(){
+  const el=document.getElementById('savingsList');
+  el.innerHTML=state.goals.savings.map((g,i)=>{
+    const mNeed=g.date?Math.max(0,(g.target-g.saved))/monthsUntil(g.date):null;
+    return `<div class="goalrow">
+      <div class="gtop"><input class="gname" value="${esc(g.name)}" onchange="updGoal('savings',${i},'name',this.value)" placeholder="Goal name">
+      <button class="icon-btn" onclick="delGoal('savings',${i})">✕</button></div>
+      <div class="fldgrid">
+        <label class="fld"><span>Target</span><input type="number" min="0" value="${g.target}" onchange="updGoal('savings',${i},'target',this.value)"></label>
+        <label class="fld"><span>Saved</span><input type="number" min="0" value="${g.saved}" onchange="updGoal('savings',${i},'saved',this.value)"></label>
+        <label class="fld"><span>Target date (optional)</span><input type="date" value="${g.date||''}" onchange="updGoal('savings',${i},'date',this.value)"></label>
+      </div>
+      ${progressBar(g.saved,g.target,'#2f5fa0')}
+      <div class="goalmeta"><span><strong>${money0(g.saved)}</strong> of ${money0(g.target)} · ${g.target>0?Math.round(g.saved/g.target*100):0}%</span>${mNeed!=null?`<span>Set aside <strong>${money0(mNeed)}</strong>/mo to hit the date</span>`:''}</div>
+    </div>`;
+  }).join('')||`<div class="empty">No savings goals yet — add one below.</div>`;
+}
+function addSavings(){state.goals.savings.push({name:'New goal',target:1000,saved:0,date:''});save();renderSavings();renderDashboard();}
+
+function renderSinking(){
+  const el=document.getElementById('sinkingList');
+  let totalMonthly=0;
+  el.innerHTML=state.goals.sinking.map((g,i)=>{
+    const m=monthsUntil(g.due);
+    const need=m?Math.max(0,(g.target-g.saved))/m:0;
+    totalMonthly+=need;
+    return `<div class="goalrow">
+      <div class="gtop"><input class="gname" value="${esc(g.name)}" onchange="updGoal('sinking',${i},'name',this.value)" placeholder="Fund name">
+      <button class="icon-btn" onclick="delGoal('sinking',${i})">✕</button></div>
+      <div class="fldgrid">
+        <label class="fld"><span>Target</span><input type="number" min="0" value="${g.target}" onchange="updGoal('sinking',${i},'target',this.value)"></label>
+        <label class="fld"><span>Saved</span><input type="number" min="0" value="${g.saved}" onchange="updGoal('sinking',${i},'saved',this.value)"></label>
+        <label class="fld"><span>Due date</span><input type="date" value="${g.due||''}" onchange="updGoal('sinking',${i},'due',this.value)"></label>
+        <label class="fld"><span>Monthly set-aside</span><div class="cell-output">${money0(need)}</div></label>
+      </div>
+      ${progressBar(g.saved,g.target,'#C59B27')}
+      <div class="goalmeta"><span><strong>${money0(g.saved)}</strong> of ${money0(g.target)}</span><span>${m?m+' months to due date':'set a due date'}</span></div>
+    </div>`;
+  }).join('')||`<div class="empty">No sinking funds yet — add one below.</div>`;
+  document.getElementById('sinkingTotal').innerHTML=state.goals.sinking.length?`<span></span><span>Total monthly set-asides: <strong>${money0(totalMonthly)}</strong></span>`:'';
+}
+function addSinking(){state.goals.sinking.push({name:'New sinking fund',target:600,saved:0,due:isoMonthsAhead(6)});save();renderSinking();renderDashboard();}
+
+function updGoal(list,i,f,v){
+  if(NUM_FIELDS.has(f))v=parseFloat(v)||0;
+  state.goals[list][i][f]=v;save();
+  if(list==='savings')renderSavings();else renderSinking();
+  renderDashboard();
+}
+function delGoal(list,i){state.goals[list].splice(i,1);save();if(list==='savings')renderSavings();else renderSinking();renderDashboard();}
+
+function simulateDebts(){
+  let ds=state.debts.map(d=>({name:d.name,bal:Math.max(0,+d.balance||0),apr:+d.apr||0,min:Math.max(0,+d.min||0)}));
+  if(!ds.some(d=>d.bal>0.005))return{months:0,interest:0,date:null,payoff:{},capped:false,totalDebt:0};
+  const budget=ds.reduce((s,d)=>s+d.min,0)+(+state.debtExtra||0);
+  const orderFn=state.debtStrategy==='snowball'?(a,b)=>a.bal-b.bal:(a,b)=>b.apr-a.apr;
+  let month=0,interest=0;const MAX=1200;const payoff={};const totalDebt=ds.reduce((s,d)=>s+d.bal,0);
+  while(ds.some(d=>d.bal>0.005)&&month<MAX){
+    month++;
+    ds.forEach(d=>{if(d.bal>0.005){const i=d.bal*(d.apr/100/12);d.bal+=i;interest+=i;}});
+    let avail=budget;
+    ds.forEach(d=>{if(d.bal>0.005){const pay=Math.min(d.min,d.bal);d.bal-=pay;avail-=pay;}});
+    if(avail<0)avail=0;
+    const targets=ds.filter(d=>d.bal>0.005).sort(orderFn);
+    for(const t of targets){if(avail<=0.005)break;const pay=Math.min(avail,t.bal);t.bal-=pay;avail-=pay;}
+    ds.forEach(d=>{if(d.bal<=0.005&&!payoff[d.name])payoff[d.name]=month;});
+  }
+  const capped=month>=MAX&&ds.some(d=>d.bal>0.005);
+  const date=new Date();date.setMonth(date.getMonth()+month);
+  return{months:month,interest,date,payoff,capped,totalDebt,budget};
+}
+function fmtMonthYear(d){return d?d.toLocaleDateString('en-US',{month:'short',year:'numeric'}):'—';}
+function offsetMonths(n){const d=new Date();d.setMonth(d.getMonth()+n);return d;}
+function renderDebt(){
+  document.getElementById('debtStrategy').value=state.debtStrategy;
+  document.getElementById('debtExtra').value=state.debtExtra;
+  const sim=simulateDebts();
+  const tb=document.querySelector('#debtTable tbody');
+  const order=[...state.debts].map((d,i)=>({d,i})).sort((a,b)=>state.debtStrategy==='snowball'?(+a.d.balance)-(+b.d.balance):(+b.d.apr)-(+a.d.apr));
+  tb.innerHTML=order.map(({d,i})=>{
+    const pm=sim.payoff[d.name];
+    const badge=(+d.balance>0.005)?(pm?fmtMonthYear(offsetMonths(pm)):'—'):'<span class="pill active">Cleared</span>';
+    return `<tr>
+      <td><input value="${esc(d.name)}" onchange="upd('debts',${i},'name',this.value)"></td>
+      <td><input type="number" min="0" value="${d.balance}" onchange="upd('debts',${i},'balance',this.value)"></td>
+      <td><input type="number" min="0" step="0.1" value="${d.apr}" onchange="upd('debts',${i},'apr',this.value)"></td>
+      <td><input type="number" min="0" value="${d.min}" onchange="upd('debts',${i},'min',this.value)"></td>
+      <td style="font-size:.82rem;color:var(--muted)">${badge}</td>
+      <td><button class="icon-btn" onclick="del('debts',${i})">✕</button></td>
+    </tr>`;}).join('')||`<tr><td colspan="6" class="empty">No debts — add one below, or enjoy being debt-free.</td></tr>`;
+  const yrs=Math.floor(sim.months/12),mos=sim.months%12;
+  const dur=sim.months?`${yrs?yrs+'y ':''}${mos}m`:'—';
+  document.getElementById('debtStats').innerHTML=`
+    <div class="stat"><div class="lbl">Total Debt</div><div class="val">${money0(sim.totalDebt)}</div></div>
+    <div class="stat"><div class="lbl">Monthly Payment</div><div class="val">${money0(sim.budget||0)}</div><div class="hint">mins + extra</div></div>
+    <div class="stat"><div class="lbl">Time to Freedom</div><div class="val">${sim.capped?'100y+':dur}</div><div class="hint">${sim.capped?'Increase payment':'at this plan'}</div></div>
+    <div class="stat accent"><div class="lbl">Debt-Free Date</div><div class="val" style="font-size:1.9rem">${sim.capped?'—':fmtMonthYear(sim.date)}</div><div class="hint">Total interest: ${money0(sim.interest)}</div></div>`;
+}
+function setDebtStrategy(v){state.debtStrategy=v;save();renderDebt();renderDashboard();}
+function setDebtExtra(v){state.debtExtra=parseFloat(v)||0;save();renderDebt();renderDashboard();}
+function addDebt(){state.debts.push({name:'New debt',balance:1000,apr:15,min:40});save();renderDebt();renderDashboard();}
+
+function renderDashboard(){
+  const c=calc();
+  document.getElementById('dashIncome').textContent=money0(c.income);
+  document.getElementById('dashOverhead').textContent=money0(c.overhead);
+  document.getElementById('dashMargin').textContent=money0(c.margin);
+  document.getElementById('dashReclaimed').textContent=money0(c.reclaimed);
+  renderAlloc(document.getElementById('dashAlloc'),false);
+  const ef=state.goals.emergency;
+  const covered=c.overhead>0?ef.saved/c.overhead:0;
+  document.getElementById('dashEF').textContent=covered.toFixed(1)+' mo';
+  document.getElementById('dashEFhint').textContent=`${money0(ef.saved)} of ${money0(c.overhead*(+ef.monthsTarget||0))} target`;
+  const totalSaved=(+ef.saved||0)+state.goals.savings.reduce((s,g)=>s+(+g.saved||0),0)+state.goals.sinking.reduce((s,g)=>s+(+g.saved||0),0);
+  document.getElementById('dashSaved').textContent=money0(totalSaved);
+  const sim=simulateDebts();
+  document.getElementById('dashDebt').textContent=money0(sim.totalDebt);
+  document.getElementById('dashDebtFree').textContent=sim.totalDebt<=0?'Debt-free ✓':(sim.capped?'—':fmtMonthYear(sim.date));
+  document.getElementById('dashReset').textContent=state.reset.filter(r=>r.done).length+' / '+state.reset.length;
+  document.getElementById('dashOverdue').textContent=state.maint.filter(m=>maintStatus(m).state==='overdue').length;
+  document.getElementById('dashPlays').textContent=state.plays.length;
+  document.getElementById('dashVault').textContent=state.vault.length;
+}
+
+function renderReset(){
+  const list=document.getElementById('resetList');
+  list.innerHTML=state.reset.map((r,i)=>`<div class="check-row ${r.done?'done':''}">
+    <div class="ck-box" onclick="toggleReset(${i})">${r.done?'✓':''}</div>
+    <div class="ck-body">
+      <div class="ck-task"><input value="${esc(r.task)}" onchange="upd('reset',${i},'task',this.value)" style="background:transparent;border:none;padding:2px 0;font-weight:500;color:inherit"></div>
+      <div class="ck-seg">${r.seg?`<span class="seg-pill">${esc(r.seg)}</span>`:''}</div>
+    </div>
+    <button class="icon-btn" onclick="del('reset',${i})">✕</button>
+  </div>`).join('')||`<div class="empty">No agenda items — add one below.</div>`;
+  const done=state.reset.filter(r=>r.done).length,tot=state.reset.length;
+  const pct=tot?Math.round(done/tot*100):0;
+  document.getElementById('resetPct').textContent=pct+'%';
+  document.getElementById('resetRing').style.strokeDashoffset=251.2*(1-pct/100);
+  document.getElementById('resetSummary').textContent=`${done} of ${tot} segments complete`;
+}
+function toggleReset(i){state.reset[i].done=!state.reset[i].done;save();renderReset();renderDashboard();}
+function resetChecklist(){state.reset.forEach(r=>r.done=false);save();renderReset();renderDashboard();}
+function addResetItem(){state.reset.push({task:'New agenda item',seg:'',done:false});save();renderReset();renderDashboard();}
+
+function maintStatus(m){
+  if(!m.last||!m.interval)return{state:'active',next:'—',label:'Set date'};
+  const d=new Date(m.last);d.setMonth(d.getMonth()+(+m.interval));
+  const next=d.toISOString().slice(0,10);
+  const days=Math.ceil((d-new Date())/86400000);
+  if(days<0)return{state:'overdue',next,label:'Overdue'};
+  if(days<=21)return{state:'soon',next,label:'Due soon'};
+  return{state:'active',next,label:'Active'};
+}
+function renderMaint(){
+  const tb=document.querySelector('#maintTable tbody');
+  tb.innerHTML=state.maint.map((m,i)=>{
+    const s=maintStatus(m);
+    const cls=s.state==='overdue'?'overdue':s.state==='soon'?'soon':'active';
+    return `<tr>
+      <td><input value="${esc(m.asset)}" onchange="upd('maint',${i},'asset',this.value)"></td>
+      <td><input value="${esc(m.action)}" onchange="upd('maint',${i},'action',this.value)"></td>
+      <td><input type="number" min="1" value="${m.interval}" onchange="upd('maint',${i},'interval',this.value)"></td>
+      <td><input type="date" value="${m.last}" onchange="upd('maint',${i},'last',this.value)"></td>
+      <td><span class="cell-output" style="display:block">${s.next}</span></td>
+      <td><span class="pill ${cls}">${s.label==='Overdue'?'🚨 ':''}${s.label}</span></td>
+      <td><button class="icon-btn" onclick="del('maint',${i})">✕</button></td>
+    </tr>`;}).join('')||`<tr><td colspan="7" class="empty">No assets tracked — add one below.</td></tr>`;
+}
+function addMaint(){state.maint.push({asset:'',action:'',interval:6,last:new Date().toISOString().slice(0,10)});save();renderMaint();renderDashboard();}
+
+const LEVELS=['Level 1 (Local <24h)','Level 2 (Regional 1-7 days)','Level 3 (Immediate <15m)'];
+function levelClass(l){return l.startsWith('Level 1')?'lv1':l.startsWith('Level 2')?'lv2':'lv3';}
+function renderPlays(){
+  document.getElementById('playList').innerHTML=state.plays.map((p,i)=>`<div class="mini">
+    <button class="icon-btn rm" onclick="del('plays',${i})">✕</button>
+    <span class="pill ${levelClass(p.level)}">${esc(p.level)}</span>
+    <h4 style="margin-top:8px"><input value="${esc(p.scenario)}" onchange="upd('plays',${i},'scenario',this.value)" style="background:transparent;border:none;font-family:inherit;font-size:inherit;color:inherit;font-weight:600;padding:0"></h4>
+    <label>Escalation</label>
+    <select onchange="upd('plays',${i},'level',this.value)">${LEVELS.map(l=>`<option ${l===p.level?'selected':''}>${l}</option>`).join('')}</select>
+    <label>Primary Vectors</label>
+    <input value="${esc(p.vectors)}" onchange="upd('plays',${i},'vectors',this.value)">
+    <label>Emergency Assets</label>
+    <input value="${esc(p.assets)}" onchange="upd('plays',${i},'assets',this.value)">
+  </div>`).join('')||`<div class="empty" style="grid-column:1/-1">No playbooks yet — add one below.</div>`;
+}
+function addPlay(){state.plays.push({scenario:'New contingency',level:LEVELS[0],vectors:'',assets:''});save();renderPlays();renderDashboard();}
+
+const FOLDERS=['Vital Identity','Legal Estate & Titles','Treasury Ledger','Operating Records','Protection & Insurance'];
+const DOCTYPES=['Physical Original','Certified Copy','Encrypted PDF'];
+function renderVault(){
+  document.getElementById('vaultList').innerHTML=state.vault.map((v,i)=>`<div class="mini">
+    <button class="icon-btn rm" onclick="del('vault',${i})">✕</button>
+    <div class="folder">${esc(v.folder)}</div>
+    <h4><input value="${esc(v.name)}" onchange="upd('vault',${i},'name',this.value)" style="background:transparent;border:none;font-family:inherit;font-size:inherit;color:inherit;font-weight:600;padding:0"></h4>
+    <label>Folder</label>
+    <select onchange="upd('vault',${i},'folder',this.value)">${FOLDERS.map(f=>`<option ${f===v.folder?'selected':''}>${f}</option>`).join('')}</select>
+    <label>Type</label>
+    <select onchange="upd('vault',${i},'type',this.value)">${DOCTYPES.map(t=>`<option ${t===v.type?'selected':''}>${t}</option>`).join('')}</select>
+    <label>Storage Location</label>
+    <input value="${esc(v.location)}" onchange="upd('vault',${i},'location',this.value)">
+  </div>`).join('')||`<div class="empty" style="grid-column:1/-1">No documents indexed — add one below.</div>`;
+}
+function addVault(){state.vault.push({name:'New record',folder:FOLDERS[0],type:DOCTYPES[0],location:''});save();renderVault();renderDashboard();}
+
+function upd(list,i,field,val){
+  if(NUM_FIELDS.has(field))val=parseFloat(val)||0;
+  state[list][i][field]=val;save();
+  if(list==='income'||list==='overhead'){renderIncome();renderOverhead();renderEngine();renderTreasuryAlloc();renderSweeps();renderEmergency();renderDashboard();}
+  else if(list==='sweeps'){renderSweeps();}
+  else if(list==='debts'){renderDebt();renderDashboard();}
+  else if(list==='maint'){renderMaint();renderDashboard();}
+  else if(list==='reset'){renderReset();renderDashboard();}
+  else{renderDashboard();}
+}
+function del(list,i){state[list].splice(i,1);save();renderAll();}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function renderTreasuryAlloc(){renderAlloc(document.getElementById('treasuryAlloc'),true);}
+
+function updateBackupNote(){
+  const el=document.getElementById('backupNote');
+  if(!state.lastBackup){el.className='backup-note warn';el.textContent='⚠ You have not backed up yet — your data lives only in this browser. Use “Back up my data” to save a copy you can restore anywhere.';}
+  else{el.className='backup-note';el.textContent='Last backup: '+new Date(state.lastBackup).toLocaleString();}
+}
+function exportData(){
+  state.lastBackup=new Date().toISOString();save(false);updateBackupNote();
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='provisioned-household-backup.json';a.click();
+}
+function importData(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{const d=JSON.parse(r.result);if(d.income){state=migrate(d);save();renderAll();alert('Backup restored.');}else alert('That file does not look like a valid backup.');}catch(x){alert('Could not read that file.');}};
+  r.readAsText(f);e.target.value='';
+}
+function restoreDefaults(){if(confirm('Load the sample household? This replaces your current data.')){state=DEFAULTS();save();renderAll();}}
+function clearAll(){if(confirm('Clear everything and start from a blank household? This cannot be undone.')){
+  state={income:[],overhead:[],pay:[],events:[],alloc:{reserves:30,equity:40,lifestyle:30},sweeps:[],goals:{emergency:{monthsTarget:3,saved:0},savings:[],sinking:[]},debts:[],debtStrategy:'avalanche',debtExtra:0,reset:[],maint:[],plays:[],vault:[],lastBackup:null};
+  save();renderAll();}}
+
+function showWelcome(){document.getElementById('welcome').classList.remove('hide');}
+function dismissWelcome(){document.getElementById('welcome').classList.add('hide');}
+
+function printPlan(){
+  const c=calc();const ef=state.goals.emergency;const efTarget=c.overhead*(+ef.monthsTarget||0);
+  const sim=simulateDebts();
+  const row=(l,v)=>`<div class="p-row"><span>${l}</span><b>${v}</b></div>`;
+  let html=`<div class="p-head"><div class="k">The Provisioned Household · CFO Command Center</div><h1>Household Financial Plan</h1><div style="font-size:.8rem;color:#888">Generated ${new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}</div></div>`;
+  html+=`<div class="p-sec"><h2>Treasury Summary</h2>${row('Total Net Cash Flow',money(c.income))}${row('Fixed Overhead (after pruning)',money(c.overhead))}${row('Reclaimed Capital',money(c.reclaimed))}${row('The Sovereign Margin',money(c.margin))}${row('Status',c.margin>=0?'Balanced & Solvent':'System Deficit')}</div>`;
+  html+=`<div class="p-sec"><h2>Strategic Allocations</h2>${['reserves','equity','lifestyle'].map(k=>row(`${ALLOC_META[k].name} (${state.alloc[k]}%)`,`${money(c[k].monthly)}/mo · ${money(c[k].weekly)}/wk`)).join('')}</div>`;
+  html+=`<div class="p-sec"><h2>Emergency Fund</h2>${row('Target ('+ef.monthsTarget+' months of overhead)',money0(efTarget))}${row('Currently saved',money0(ef.saved))}${row('Months of expenses covered',(c.overhead>0?ef.saved/c.overhead:0).toFixed(1)+' months')}</div>`;
+  if(state.goals.sinking.length)html+=`<div class="p-sec"><h2>Sinking Funds</h2>${state.goals.sinking.map(g=>row(g.name,money0(g.saved)+' of '+money0(g.target))).join('')}</div>`;
+  if(state.goals.savings.length)html+=`<div class="p-sec"><h2>Savings Goals</h2>${state.goals.savings.map(g=>row(g.name,money0(g.saved)+' of '+money0(g.target))).join('')}</div>`;
+  if(sim.totalDebt>0)html+=`<div class="p-sec"><h2>Debt Payoff Plan (${state.debtStrategy})</h2>${state.debts.map(d=>row(d.name,money0(d.balance)+' @ '+d.apr+'%')).join('')}${row('Debt-free date',sim.capped?'Over 100 years — increase payment':fmtMonthYear(sim.date))}${row('Total interest projected',money0(sim.interest))}</div>`;
+  html+=`<div class="p-disc">This plan is for personal organization and educational purposes only and is not financial, tax, or legal advice. Figures are estimates based on the information entered. Consult a qualified professional before making financial decisions. &copy; The Provisioned Household.</div>`;
+  document.getElementById('printArea').innerHTML=html;
+  window.print();
+}
+
+/* ============================================================
+   HOUSEHOLD CALENDAR + PAYCHECK-BUDGETING ENGINE
+   ============================================================
+   How it works, in plain terms:
+   • Bills come from the Treasury tab (each has a Due Day 1–31).
+   • Paychecks come from the Pay Schedule (frequency + one real
+     pay date as an anchor). We project every future payday from
+     that anchor: weekly = +7 days, biweekly = +14 days, monthly
+     = same day each month.
+   • The Calendar draws paydays + bills + meals + routines + family
+     events onto one grid — the SAME data the planner reads.
+   • The Paycheck Planner assigns each bill to the most recent
+     paycheck that lands on or before its due date (the money that's
+     already in hand), so you see exactly which check covers what.
+   ============================================================ */
+const DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+function dISO(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function parseISO(s){if(!s)return null;const p=String(s).split('-');if(p.length<3)return null;return new Date(+p[0],+p[1]-1,+p[2]);}
+function addDays(d,n){const t=new Date(d);t.setDate(t.getDate()+n);return t;}
+function sameDay(a,b){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();}
+function daysInMonth(y,m){return new Date(y,m+1,0).getDate();}
+function weekStartOf(d){return addDays(new Date(d.getFullYear(),d.getMonth(),d.getDate()),-d.getDay());}
+
+let calView={y:new Date().getFullYear(),m:new Date().getMonth(),mode:'month',weekStart:weekStartOf(new Date())};
+
+/* Project all paydays for a pay source within [start,end] (inclusive). */
+function genPaydays(p,start,end){
+  const out=[];const anchor=parseISO(p.anchor);if(!anchor||!(+p.amount||p.amount===0))return out;
+  if(p.freq==='monthly'){
+    const day=anchor.getDate();
+    let cur=new Date(start.getFullYear(),start.getMonth(),1);
+    const stop=new Date(end.getFullYear(),end.getMonth()+1,1);
+    while(cur<=stop){
+      const dim=daysInMonth(cur.getFullYear(),cur.getMonth());
+      const dd=new Date(cur.getFullYear(),cur.getMonth(),Math.min(day,dim));
+      if(dd>=start&&dd<=end)out.push(dd);
+      cur.setMonth(cur.getMonth()+1);
+    }
+  }else{
+    const step=p.freq==='weekly'?7:14;
+    let d=new Date(anchor);
+    while(d>start)d=addDays(d,-step);
+    while(d<=end){if(d>=start)out.push(new Date(d));d=addDays(d,step);}
+  }
+  return out;
+}
+/* Expand one event's recurrence within [start,end]. */
+function eventOccurrences(ev,start,end){
+  const base=parseISO(ev.date);if(!base)return [];const out=[];
+  if(ev.recur==='weekly'||ev.recur==='biweekly'){
+    const step=ev.recur==='weekly'?7:14;let d=new Date(base);
+    while(d>start)d=addDays(d,-step);
+    while(d<=end){if(d>=start)out.push(new Date(d));d=addDays(d,step);}
+  }else if(ev.recur==='monthly'){
+    let cur=new Date(start.getFullYear(),start.getMonth(),1);const stop=new Date(end.getFullYear(),end.getMonth()+1,1);
+    while(cur<=stop){const dim=daysInMonth(cur.getFullYear(),cur.getMonth());const dd=new Date(cur.getFullYear(),cur.getMonth(),Math.min(base.getDate(),dim));if(dd>=start&&dd<=end)out.push(dd);cur.setMonth(cur.getMonth()+1);}
+  }else if(ev.recur==='yearly'){
+    for(let y=start.getFullYear();y<=end.getFullYear();y++){const dd=new Date(y,base.getMonth(),base.getDate());if(dd>=start&&dd<=end)out.push(dd);}
+  }else{ if(base>=start&&base<=end)out.push(base); }
+  return out;
+}
+/* Everything dated within a window: paydays, bills, events. */
+function collectOccurrences(start,end){
+  const items=[];
+  state.pay.forEach(p=>genPaydays(p,start,end).forEach(d=>items.push({date:d,type:'payday',title:p.name,amount:+p.amount||0})));
+  state.overhead.forEach(o=>{
+    if(o.action==='Prune (Cancel)'||!(+o.due>=1))return;
+    let cur=new Date(start.getFullYear(),start.getMonth(),1);const stop=new Date(end.getFullYear(),end.getMonth()+1,1);
+    while(cur<=stop){const dim=daysInMonth(cur.getFullYear(),cur.getMonth());const dd=new Date(cur.getFullYear(),cur.getMonth(),Math.min(+o.due,dim));if(dd>=start&&dd<=end)items.push({date:dd,type:'bill',title:o.category,amount:+o.cost||0});cur.setMonth(cur.getMonth()+1);}
+  });
+  state.events.forEach((ev,i)=>eventOccurrences(ev,start,end).forEach(d=>items.push({date:d,type:ev.type||'note',title:ev.title,evIndex:i,pdfId:ev.pdfId,fileName:ev.fileName})));
+  return items;
+}
+const CAL_ORDER={payday:0,bill:1,meal:2,routine:3,family:4,note:5};
+function calChip(e){
+  let label=e.title;
+  if(e.type==='payday')label='＋ '+e.title+' '+money0(e.amount);
+  else if(e.type==='bill')label=e.title+' '+money0(e.amount);
+  else if(e.type==='meal')label='🍽 '+e.title;
+  const click=(e.type==='meal'&&e.pdfId)?`onclick="openMealPdf('${e.pdfId}')"`:'';
+  return `<div class="cal-chip ${e.type}" ${click} title="${esc(e.title)}">${esc(label)}</div>`;
+}
+function renderCalMonth(){
+  const y=calView.y,m=calView.m;
+  const first=new Date(y,m,1);const gridStart=addDays(first,-first.getDay());
+  const items=collectOccurrences(gridStart,addDays(gridStart,41));
+  const byDay={};items.forEach(it=>{(byDay[dISO(it.date)]=byDay[dISO(it.date)]||[]).push(it);});
+  const today=new Date();today.setHours(0,0,0,0);
+  let html='<div class="cal-weekhead">'+DOW.map(d=>`<div>${d}</div>`).join('')+'</div><div class="cal-monthgrid">';
+  for(let i=0;i<42;i++){
+    const d=addDays(gridStart,i);const out=d.getMonth()!==m;
+    const evs=(byDay[dISO(d)]||[]).slice().sort((a,b)=>CAL_ORDER[a.type]-CAL_ORDER[b.type]);
+    const shown=evs.slice(0,3);const extra=evs.length-shown.length;
+    html+=`<div class="cal-cell ${out?'out':''} ${sameDay(d,today)?'today':''}"><div class="cal-daynum">${d.getDate()}</div>${shown.map(calChip).join('')}${extra>0?`<div class="cal-more">+${extra} more</div>`:''}</div>`;
+  }
+  document.getElementById('calGrid').innerHTML=html+'</div>';
+  document.getElementById('calTitle').textContent=MONTHS[m]+' '+y;
+}
+function calWkRow(e){
+  const tag={payday:'Pay',bill:'Bill',meal:'Meal',routine:'Routine',family:'Family',note:'Note'}[e.type]||'Event';
+  let right='';
+  if(e.type==='payday')right=`<span class="amt">+${money0(e.amount)}</span>`;
+  else if(e.type==='bill')right=`<span class="amt">${money0(e.amount)}</span>`;
+  else if(e.type==='meal'&&e.pdfId)right=`<span class="open" onclick="openMealPdf('${e.pdfId}')">Open PDF</span>`;
+  return `<div class="cal-wkrow"><span class="cal-tag ${e.type}">${tag}</span><span>${esc(e.title)}</span>${right}</div>`;
+}
+function renderCalWeek(){
+  const ws=calView.weekStart||weekStartOf(new Date());const we=addDays(ws,6);
+  const items=collectOccurrences(ws,we);
+  const byDay={};items.forEach(it=>{(byDay[dISO(it.date)]=byDay[dISO(it.date)]||[]).push(it);});
+  const today=new Date();today.setHours(0,0,0,0);
+  let html='<div class="cal-week">';
+  for(let i=0;i<7;i++){
+    const d=addDays(ws,i);const evs=(byDay[dISO(d)]||[]).slice().sort((a,b)=>CAL_ORDER[a.type]-CAL_ORDER[b.type]);
+    html+=`<div class="cal-wkday ${sameDay(d,today)?'today':''}"><h4>${d.getDate()} ${MONTHS[d.getMonth()].slice(0,3)} <span class="dow">${DOW[d.getDay()]}</span></h4>${evs.length?evs.map(calWkRow).join(''):'<div class="cal-empty">Nothing scheduled</div>'}</div>`;
+  }
+  document.getElementById('calGrid').innerHTML=html+'</div>';
+  document.getElementById('calTitle').textContent=`${MONTHS[ws.getMonth()].slice(0,3)} ${ws.getDate()} – ${MONTHS[we.getMonth()].slice(0,3)} ${we.getDate()}, ${we.getFullYear()}`;
+}
+function calShift(n){
+  if(calView.mode==='week'){calView.weekStart=addDays(calView.weekStart||weekStartOf(new Date()),7*n);}
+  else{let m=calView.m+n,y=calView.y;if(m<0){m=11;y--;}if(m>11){m=0;y++;}calView.m=m;calView.y=y;}
+  renderCalendar();
+}
+function calToday(){const t=new Date();calView.y=t.getFullYear();calView.m=t.getMonth();calView.weekStart=weekStartOf(t);renderCalendar();}
+function calSetMode(mode){calView.mode=mode;document.getElementById('calModeMonth').classList.toggle('active',mode==='month');document.getElementById('calModeWeek').classList.toggle('active',mode==='week');renderCalendar();}
+
+/* ---- Paycheck Planner: which check covers which bill ---- */
+function goalsMonthlyNeed(){
+  let t=0;
+  (state.goals.sinking||[]).forEach(g=>{const m=monthsUntil(g.due);t+=m?Math.max(0,(g.target-g.saved))/m:0;});
+  (state.goals.savings||[]).forEach(g=>{if(g.date){const m=monthsUntil(g.date);t+=m?Math.max(0,(g.target-g.saved))/m:0;}});
+  return t;
+}
+function renderPaycheckPlanner(){
+  const y=calView.y,m=calView.m;
+  const mStart=new Date(y,m,1),mEnd=new Date(y,m,daysInMonth(y,m));
+  let checks=[];
+  state.pay.forEach(p=>genPaydays(p,mStart,mEnd).forEach(d=>checks.push({date:d,name:p.name,amount:+p.amount||0,bills:[]})));
+  checks.sort((a,b)=>a.date-b.date);
+  const el=document.getElementById('paycheckPlanner');
+  if(!checks.length){el.innerHTML=`<div class="empty">No paydays fall in ${MONTHS[m]} ${y}. Add a paycheck in the Pay Schedule below, then use ‹ › to move months.</div>`;return;}
+  const bills=[];
+  state.overhead.forEach(o=>{if(o.action!=='Prune (Cancel)'&&+o.due>=1){const dd=new Date(y,m,Math.min(+o.due,daysInMonth(y,m)));bills.push({date:dd,title:o.category,amount:+o.cost||0});}});
+  bills.sort((a,b)=>a.date-b.date);
+  bills.forEach(b=>{let idx=-1;for(let i=0;i<checks.length;i++){if(checks[i].date<=b.date)idx=i;}if(idx<0)idx=0;checks[idx].bills.push(b);});
+  const perGoal=goalsMonthlyNeed()/checks.length;
+  el.innerHTML=checks.map(c=>{
+    const billSum=c.bills.reduce((s,b)=>s+b.amount,0);
+    const leftover=c.amount-billSum-perGoal;
+    return `<div class="pcheck ${leftover<0?'short':''}">
+      <div class="pcheck-top"><span class="pc-date">${DOW[c.date.getDay()]} ${MONTHS[c.date.getMonth()].slice(0,3)} ${c.date.getDate()}</span><span class="pc-src">${esc(c.name)}</span><span class="pc-in">+${money0(c.amount)}</span></div>
+      ${c.bills.map(b=>`<div class="pcheck-bill"><span>${esc(b.title)}</span><span style="color:var(--muted);font-size:.76rem">due ${b.date.getMonth()+1}/${b.date.getDate()}</span><span class="b-amt">−${money0(b.amount)}</span></div>`).join('')||'<div class="pcheck-bill" style="color:var(--muted)">No fixed bills fall to this paycheck</div>'}
+      ${perGoal>0.5?`<div class="pcheck-bill"><span>Savings &amp; funds set-aside</span><span style="color:var(--muted);font-size:.76rem">goals</span><span class="b-amt">−${money0(perGoal)}</span></div>`:''}
+      <div class="pcheck-foot"><span>Left after this check</span><span class="lo ${leftover<0?'neg':'pos'}">${money0(leftover)}</span></div>
+    </div>`;
+  }).join('');
+}
+
+/* ---- Pay Schedule table ---- */
+const FREQS=[['weekly','Weekly'],['biweekly','Every 2 weeks'],['monthly','Monthly']];
+function renderPay(){
+  const tb=document.querySelector('#payTable tbody');
+  tb.innerHTML=state.pay.map((p,i)=>`<tr>
+    <td><input value="${esc(p.name)}" onchange="updPay(${i},'name',this.value)" placeholder="e.g. Primary Paycheck"></td>
+    <td><select onchange="updPay(${i},'freq',this.value)">${FREQS.map(f=>`<option value="${f[0]}" ${f[0]===p.freq?'selected':''}>${f[1]}</option>`).join('')}</select></td>
+    <td><input type="date" value="${p.anchor||''}" onchange="updPay(${i},'anchor',this.value)"></td>
+    <td><input type="number" step="0.01" value="${p.amount}" onchange="updPay(${i},'amount',this.value)"></td>
+    <td><button class="icon-btn" onclick="delPay(${i})">✕</button></td>
+  </tr>`).join('')||`<tr><td colspan="5" class="empty">No paychecks yet — add one below.</td></tr>`;
+}
+function updPay(i,f,v){if(f==='amount')v=parseFloat(v)||0;state.pay[i][f]=v;save();renderCalendar();}
+function addPay(){state.pay.push({name:'New paycheck',freq:'biweekly',anchor:isoMostRecentWeekday(5),amount:0});save();renderCalendar();}
+function delPay(i){state.pay.splice(i,1);save();renderCalendar();}
+
+/* ---- Events / Meals / Routines ---- */
+const EV_TYPES=[['family','Family'],['routine','Routine'],['meal','Meal'],['note','Note']];
+const EV_RECUR=[['none','One-time'],['weekly','Weekly'],['biweekly','Every 2 weeks'],['monthly','Monthly'],['yearly','Yearly']];
+const EV_TAG={family:'Family',routine:'Routine',meal:'Meal',note:'Note'};
+function renderEventList(){
+  const el=document.getElementById('eventList');
+  const rows=state.events.map((e,i)=>({e,i})).sort((a,b)=>(a.e.date||'').localeCompare(b.e.date||''));
+  el.innerHTML=rows.map(({e,i})=>`<div class="goalrow">
+    <div class="gtop">
+      <span class="cal-tag ${e.type||'note'}" style="align-self:center">${EV_TAG[e.type]||'Event'}</span>
+      <input class="gname" style="flex:1" value="${esc(e.title)}" onchange="updEvent(${i},'title',this.value)" placeholder="Title">
+      <button class="icon-btn" onclick="delEvent(${i})">✕</button>
+    </div>
+    <div class="fldgrid">
+      <label class="fld"><span>Date</span><input type="date" value="${e.date||''}" onchange="updEvent(${i},'date',this.value)"></label>
+      <label class="fld"><span>Type</span><select onchange="updEvent(${i},'type',this.value)">${EV_TYPES.map(t=>`<option value="${t[0]}" ${t[0]===e.type?'selected':''}>${t[1]}</option>`).join('')}</select></label>
+      <label class="fld"><span>Repeats</span><select onchange="updEvent(${i},'recur',this.value)">${EV_RECUR.map(t=>`<option value="${t[0]}" ${t[0]===e.recur?'selected':''}>${t[1]}</option>`).join('')}</select></label>
+    </div>
+    ${e.type==='meal'?mealPdfRow(e,i):`<label class="fld" style="display:block;margin-top:8px"><span>Notes</span><input value="${esc(e.notes||'')}" onchange="updEvent(${i},'notes',this.value)" placeholder="optional"></label>`}
+  </div>`).join('')||`<div class="empty">No events yet — add one below.</div>`;
+}
+function mealPdfRow(e,i){
+  if(e.pdfId){
+    return `<div class="goalmeta" style="margin-top:10px"><span>📄 <strong>${esc(e.fileName||'Meal PDF')}</strong></span><span style="display:flex;gap:8px"><button class="btn btn-ghost btn-sm" onclick="openMealPdf('${e.pdfId}')">Open</button><button class="btn btn-ghost btn-sm" onclick="removeMealPdf(${i})">Remove PDF</button></span></div>`;
+  }
+  return `<div style="margin-top:10px"><button class="btn btn-ghost btn-sm" onclick="pickMealPdf(${i})">⤒ Attach meal PDF</button> <span style="font-size:.76rem;color:var(--muted)">stored on this device</span></div>`;
+}
+function updEvent(i,f,v){state.events[i][f]=v;save();renderCalendar();}
+function addEvent(type){
+  const dd=Math.min(new Date().getDate(),daysInMonth(calView.y,calView.m));
+  state.events.push({id:'ev'+Date.now(),title:type==='meal'?'New meal':type==='routine'?'New routine':'New event',date:dISO(new Date(calView.y,calView.m,dd)),type:type,recur:type==='routine'?'weekly':'none',notes:'',pdfId:null,fileName:''});
+  save();renderCalendar();
+}
+function delEvent(i){const e=state.events[i];if(e&&e.pdfId)idbDelete(e.pdfId);state.events.splice(i,1);save();renderCalendar();}
+
+/* ---- Meal PDF storage (IndexedDB — larger, stays on this device) ---- */
+let _db=null;
+function idb(){return new Promise((res,rej)=>{if(_db)return res(_db);const r=indexedDB.open('ph_meal_pdfs',1);r.onupgradeneeded=()=>{r.result.createObjectStore('pdfs');};r.onsuccess=()=>{_db=r.result;res(_db);};r.onerror=()=>rej(r.error);});}
+function idbPut(id,blob){return idb().then(db=>new Promise((res,rej)=>{const tx=db.transaction('pdfs','readwrite');tx.objectStore('pdfs').put(blob,id);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error);}));}
+function idbGet(id){return idb().then(db=>new Promise((res,rej)=>{const tx=db.transaction('pdfs','readonly');const rq=tx.objectStore('pdfs').get(id);rq.onsuccess=()=>res(rq.result);rq.onerror=()=>rej(rq.error);}));}
+function idbDelete(id){return idb().then(db=>new Promise(res=>{const tx=db.transaction('pdfs','readwrite');tx.objectStore('pdfs').delete(id);tx.oncomplete=()=>res();tx.onerror=()=>res();})).catch(()=>{});}
+let _pdfTargetIdx=null;
+function pickMealPdf(i){_pdfTargetIdx=i;document.getElementById('mealPdfInput').click();}
+function handleMealPdf(ev){
+  const f=ev.target.files[0];ev.target.value='';if(!f||_pdfTargetIdx==null)return;
+  if(f.type!=='application/pdf'){alert('Please choose a PDF file.');return;}
+  if(f.size>25*1024*1024&&!confirm('That PDF is large ('+Math.round(f.size/1048576)+' MB). Attach it anyway?'))return;
+  const id='pdf'+Date.now();
+  idbPut(id,f).then(()=>{const e=state.events[_pdfTargetIdx];if(!e)return;if(e.pdfId)idbDelete(e.pdfId);e.pdfId=id;e.fileName=f.name;save();renderCalendar();}).catch(()=>alert('Could not save that PDF on this device.'));
+}
+function openMealPdf(id){idbGet(id).then(blob=>{if(!blob){alert('That PDF is not on this device. PDFs are stored locally and are not part of the JSON backup, so they don’t travel between devices.');return;}const url=URL.createObjectURL(blob);window.open(url,'_blank');setTimeout(()=>URL.revokeObjectURL(url),60000);}).catch(()=>alert('Could not open that PDF.'));}
+function removeMealPdf(i){const e=state.events[i];if(!e)return;if(e.pdfId)idbDelete(e.pdfId);e.pdfId=null;e.fileName='';save();renderCalendar();}
+
+/* ---- Print the calendar (current month) ---- */
+function printCalendar(){
+  const y=calView.y,m=calView.m;
+  const first=new Date(y,m,1);const gridStart=addDays(first,-first.getDay());
+  const items=collectOccurrences(gridStart,addDays(gridStart,41));
+  const byDay={};items.forEach(it=>{(byDay[dISO(it.date)]=byDay[dISO(it.date)]||[]).push(it);});
+  let g=DOW.map(d=>`<div class="pc-wh">${d}</div>`).join('');
+  for(let i=0;i<42;i++){
+    const d=addDays(gridStart,i);const out=d.getMonth()!==m;
+    const evs=(byDay[dISO(d)]||[]).slice().sort((a,b)=>CAL_ORDER[a.type]-CAL_ORDER[b.type]);
+    g+=`<div class="pc-cell ${out?'out':''}"><span class="pc-dn">${d.getDate()}</span>${evs.map(e=>{let t=e.title;if(e.type==='payday')t='+ '+e.title+' '+money0(e.amount);else if(e.type==='bill')t=e.title+' '+money0(e.amount);else if(e.type==='meal')t='Meal: '+e.title;return `<span class="pc-ev">${esc(t)}</span>`;}).join('')}</div>`;
+  }
+  document.getElementById('printArea').innerHTML='';
+  const pc=document.getElementById('printCal');
+  pc.innerHTML=`<div class="p-head"><div class="k">The Provisioned Household · Household Calendar</div><h1>${MONTHS[m]} ${y}</h1></div><div class="pc-grid">${g}</div><div class="p-disc">Generated ${new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})} · The Provisioned Household. For personal organization only.</div>`;
+  pc.classList.add('printing');
+  window.print();
+  setTimeout(()=>pc.classList.remove('printing'),600);
+}
+function renderCalendar(){
+  renderPay();renderEventList();
+  if(calView.mode==='week')renderCalWeek();else renderCalMonth();
+  renderPaycheckPlanner();
+}
+
+function renderAll(){
+  renderIncome();renderOverhead();renderEngine();renderTreasuryAlloc();renderSweeps();
+  renderEmergency();renderSavings();renderSinking();renderDebt();
+  renderReset();renderMaint();renderPlays();renderVault();renderDashboard();
+  renderCalendar();
+  updateBackupNote();
+}
+renderAll();
+// The branded welcome screen appears every time the file is opened.
+document.getElementById('welcome').classList.remove('hide');
+</script>
+</body>
+</html>
