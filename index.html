@@ -205,7 +205,12 @@
   .pcheck-top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:4px}
   .pcheck-top .pc-date{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:700;color:var(--green)}
   .pcheck-top .pc-src{font-size:.72rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
-  .pcheck-top .pc-in{margin-left:auto;font-weight:600;color:var(--green)}
+  .pcheck-top .pc-in{margin-left:auto;font-weight:600;color:var(--muted);font-size:.86rem}
+  .pcheck-actual{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#fff;border:1px solid var(--cream-dk);border-radius:8px;padding:8px 10px;margin-bottom:6px}
+  .pcheck-actual label{font-size:.68rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:600;flex:0 0 auto}
+  .pcheck-actual input{width:120px;flex:0 0 auto}
+  .pc-unconfirmed{font-size:.76rem;color:var(--muted);font-style:italic}
+  .pcheck-note{font-size:.78rem;color:var(--muted);margin-top:8px;padding-top:8px;border-top:1px dotted var(--cream-dk);line-height:1.5}
   .pcheck-bill{display:flex;gap:10px;font-size:.86rem;padding:3px 0;border-top:1px dotted var(--cream-dk)}
   .pcheck-bill .b-amt{margin-left:auto;font-variant-numeric:tabular-nums}
   .pcheck-foot{display:flex;gap:10px;margin-top:8px;padding-top:8px;border-top:2px solid var(--gold);font-weight:600}
@@ -345,7 +350,7 @@
   <section class="panel" id="calendar">
     <div class="section-head">
       <h2>The Household Calendar</h2>
-      <div class="sub">One shared view of the whole household — paydays, bill due dates, meals, routines, and family events. Set up your bills and Pay Schedule on the <strong>Treasury</strong> tab and they flow here automatically; the Paycheck Planner below shows exactly which check covers which expense.</div>
+      <div class="sub">One shared view of the whole household — paydays, bill due dates, meals, routines, and family events. Set up your income and bills on the <strong>Treasury</strong> tab and they flow here automatically; the Paycheck Planner below shows exactly which check covers which expense, and lets you confirm what each paycheck actually came in as.</div>
     </div>
 
     <div class="card">
@@ -401,29 +406,17 @@
     </div>
 
     <div class="card">
-      <div class="card-title">💼 Income &amp; Operating Cash Flow</div>
+      <div class="card-title">💼 Income &amp; Pay Schedule <span class="badge">Feeds the Calendar</span></div>
       <hr class="gold-rule">
+      <div class="card-note">One box, one entry per income source. Type what you actually receive each paycheck, how often it lands, and one real pay date — that's it. The monthly total, the Calendar, and the Paycheck Planner all calculate themselves from those three numbers; you never have to convert anything in your head.</div>
       <div class="tbl-scroll">
         <table id="incomeTable">
-          <thead><tr><th style="min-width:180px">Cash Flow Source</th><th style="width:150px">Net Monthly</th><th style="width:170px">Source Type</th><th style="width:44px"></th></tr></thead>
+          <thead><tr><th style="min-width:170px">Cash Flow Source</th><th style="width:120px">Net Amount</th><th style="width:150px">Frequency</th><th style="width:160px">A Real Pay Date</th><th style="width:110px">≈ Monthly</th><th style="width:170px">Source Type</th><th style="width:44px"></th></tr></thead>
           <tbody></tbody>
-          <tfoot><tr><td class="foot-lbl">Total Net Cash Flow</td><td class="foot-val" id="incomeTotal">$0</td><td colspan="2"></td></tr></tfoot>
+          <tfoot><tr><td class="foot-lbl">Total Net Cash Flow</td><td colspan="3"></td><td class="foot-val" id="incomeTotal">$0</td><td colspan="2"></td></tr></tfoot>
         </table>
       </div>
       <div class="card-actions"><button class="btn btn-ghost btn-sm" onclick="addIncome()">＋ Add income source</button></div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">🗓️ Pay Schedule <span class="badge">Feeds the Calendar</span></div>
-      <hr class="gold-rule">
-      <div class="card-note">Add each earner and how often they're paid — weekly, every two weeks, or monthly. Enter one real pay date as the anchor and the app projects every future payday from it — that's how the Calendar and Paycheck Planner know exactly when your money lands.</div>
-      <div class="tbl-scroll">
-        <table id="payTable">
-          <thead><tr><th style="min-width:150px">Paycheck / Earner</th><th style="width:150px">Frequency</th><th style="width:160px">A real pay date</th><th style="width:130px">Net amount</th><th style="width:44px"></th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-      <div class="card-actions"><button class="btn btn-ghost btn-sm" onclick="addPay()">＋ Add a paycheck</button></div>
     </div>
 
     <div class="card">
@@ -622,11 +615,11 @@
       <div class="card-title">🚦 Setup Order — Do These First</div>
       <hr class="gold-rule">
       <ol class="howto-steps">
-        <li><strong>Treasury.</strong> Enter every income source, then every fixed bill. Give each bill a <strong>Due Day</strong> (1–31) — that one number is what makes the Calendar and Paycheck Planner work automatically. Leave it at 0 for anything with no fixed date, like weekly groceries.</li>
-        <li><strong>Treasury → Pay Schedule.</strong> Add each paycheck: how often it lands (weekly, every 2 weeks, or monthly) and <em>one real pay date</em> you can point to. The app projects every future payday from that single date — see the FAQ below for exactly how.</li>
+        <li><strong>Treasury — Income &amp; Pay Schedule.</strong> For each income source, enter what you actually receive each paycheck, how often it lands (weekly, every 2 weeks, or monthly), and <em>one real pay date</em> you can point to. That's the only place you type an income number — the monthly total, the Calendar, and the Paycheck Planner all calculate themselves from it.</li>
+        <li><strong>Treasury — Fixed Overhead.</strong> Enter every fixed bill and give each one a <strong>Due Day</strong> (1–31) — that's what makes the Calendar and Paycheck Planner match bills to paychecks automatically. Leave it at 0 for anything with no fixed date, like weekly groceries.</li>
         <li><strong>Dashboard.</strong> Nothing to enter here — it's your at-a-glance summary, calculated automatically from Treasury.</li>
         <li><strong>Goals &amp; Debt.</strong> Set your Emergency Fund target, any Savings Goals, Sinking Funds for irregular costs, and your Debt Payoff strategy.</li>
-        <li><strong>Weekly Reset.</strong> Run the Sunday agenda, and use the Household Chores list to assign chores by day — assigned chores show up on the Calendar automatically, tagged with each person's name.</li>
+        <li><strong>Weekly Reset.</strong> Run the Sunday agenda — confirm each paycheck's <em>actual</em> amount in the Calendar's Paycheck Planner (see the FAQ below), and use the Household Chores list to assign chores by day; assigned chores show up on the Calendar automatically, tagged with each person's name.</li>
         <li><strong>Maintenance, Playbooks, Vault.</strong> Fill these in whenever you have a spare few minutes — nothing else depends on them.</li>
       </ol>
     </div>
@@ -634,20 +627,27 @@
     <div class="card">
       <div class="card-title">💵 How does it know when I get paid?</div>
       <hr class="gold-rule">
-      <p>It doesn't guess — you tell it once, on the <strong>Treasury</strong> tab under <strong>Pay Schedule</strong>. For each paycheck you add three things: a name (like "Primary Paycheck"), how often it arrives, and <em>one real date you were actually paid</em> as the anchor.</p>
+      <p>It doesn't guess — you tell it once, on the <strong>Treasury</strong> tab, right in the Income &amp; Pay Schedule table. For each income source you enter three things: what you actually receive each paycheck, how often it arrives, and <em>one real date you were actually paid</em> as the anchor. No converting to a monthly figure yourself — that column calculates itself.</p>
       <p style="margin-top:10px">From that single anchor date, the app projects every future payday:</p>
       <ul class="howto-list">
         <li><strong>Weekly</strong> — a new payday every 7 days from your anchor.</li>
         <li><strong>Every 2 weeks (biweekly)</strong> — a new payday every 14 days. Some months this lands 3 times instead of 2 — the Calendar and Paycheck Planner will show that extra check when it happens.</li>
         <li><strong>Monthly</strong> — the same day of the month, every month, from your anchor.</li>
       </ul>
-      <p style="margin-top:10px">If you have more than one income (a spouse's paycheck, a side hustle), add each as its own row in Pay Schedule — the Paycheck Planner combines them all.</p>
+      <p style="margin-top:10px">If you have more than one income (a spouse's paycheck, a side hustle), add each as its own row — the Paycheck Planner combines them all.</p>
     </div>
 
     <div class="card">
       <div class="card-title">🧾 How bills get matched to a paycheck</div>
       <hr class="gold-rule">
       <p>Every bill on Treasury with a Due Day gets assigned to <strong>the most recent paycheck that lands on or before that due date</strong> — in other words, whichever check's money is already in hand when the bill is actually due. The Paycheck Planner on the Calendar tab lists each paycheck with its bills underneath it, and shows what's left over after they're covered (in red if a check comes up short).</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">✅ Verifying you actually got paid</div>
+      <hr class="gold-rule">
+      <p>The amounts on the Calendar start out as <em>planned</em> — projected from what you entered in Income &amp; Pay Schedule. Real paychecks vary (overtime, fewer hours, a bonus), so during your Weekly Reset, open the <strong>Paycheck Planner</strong> on the Calendar tab and type what you <em>actually</em> received into the "Actual received" box on that paycheck's card.</p>
+      <p style="margin-top:10px">Once confirmed, you'll see one of three signals: <strong>✅ Matched planned</strong>, <strong>▼ short of planned</strong>, or <strong>▲ more than planned</strong>. The bills listed on that card are covered first no matter what — the Four Walls don't move. If a check comes in short, the "Left after this check" figure shrinks to match reality, which tells you the shortfall comes out of that period's Reserves, Equity &amp; Lifestyle sweeps, not out of your bills. That's the weekly check-in: no money floating, and you know exactly where to adjust the moment a check comes in light.</p>
     </div>
 
     <div class="card">
@@ -698,9 +698,9 @@
     <div class="mbody">
       <p>This is your household&rsquo;s private financial operating system — treasury, calendar, savings, debt, maintenance, emergency playbooks, and a document vault, all in one calm place. Start in this order:</p>
       <ol class="howto-steps" style="margin:14px 0">
-        <li><strong>Treasury</strong> — enter income and bills first, with a Due Day on each bill.</li>
-        <li><strong>Treasury → Pay Schedule</strong> — tell it how often you're paid and one real pay date, so it knows exactly when your money lands.</li>
-        <li><strong>Dashboard, Goals &amp; Debt, Weekly Reset</strong> — everything else flows from there.</li>
+        <li><strong>Treasury</strong> — enter what you actually get paid, how often, and one real pay date, then every bill with a Due Day.</li>
+        <li><strong>Weekly Reset</strong> — confirm each paycheck's actual amount in the Calendar's Paycheck Planner, so nothing floats.</li>
+        <li><strong>Dashboard, Goals &amp; Debt</strong> — everything else flows from there.</li>
       </ol>
       <p>Everything you enter is saved <strong>only in this browser, on this device.</strong> Nothing is uploaded or shared. Use <strong>Back up my data</strong> regularly, and <strong>Print / Save as PDF</strong> to keep a copy on paper.</p>
       <p style="margin-top:10px">Full instructions live any time on the <strong>❓ How To</strong> tab.</p>
@@ -727,8 +727,8 @@ function isoMostRecentWeekday(wd){const t=new Date();t.setHours(0,0,0,0);const d
 
 const DEFAULTS=()=>({
   income:[
-    {source:'Primary W-2 Salary',amount:4200,type:'Primary'},
-    {source:'Side-Hustle Income',amount:800,type:'Secondary/Side-Hustle'}
+    {source:'Primary W-2 Salary',amount:1938.46,freq:'biweekly',anchor:isoMostRecentWeekday(5),type:'Primary',actuals:{}},
+    {source:'Side-Hustle Income',amount:800,freq:'monthly',anchor:isoThisMonth(20),type:'Secondary/Side-Hustle',actuals:{}}
   ],
   overhead:[
     {category:'Tithe (10%)',cost:500,tier:'10% Tithe',action:'Keep (Essential)',due:1},
@@ -738,10 +738,6 @@ const DEFAULTS=()=>({
     {category:'Auto & Fuel',cost:410,tier:'Transportation (Wall 4)',action:'Keep (Essential)',due:12},
     {category:'Health Insurance',cost:300,tier:'Healthcare Insurances',action:'Keep (Essential)',due:5},
     {category:'Streaming Bundle',cost:0,tier:'Debt Minimums',action:'Prune (Cancel)',due:22}
-  ],
-  pay:[
-    {name:'Primary Paycheck',freq:'biweekly',anchor:isoMostRecentWeekday(5),amount:1615},
-    {name:'Side-Hustle',freq:'monthly',anchor:isoThisMonth(20),amount:800}
   ],
   events:[
     {id:'ev1',title:'Sunday Executive Reset',date:isoMostRecentWeekday(0),type:'routine',recur:'weekly',notes:'45-min family meeting'},
@@ -776,7 +772,7 @@ const DEFAULTS=()=>({
   debtExtra:150,
   reset:[
     {task:'Calendar Sweep — align the week ahead',seg:'0–10 min',done:false},
-    {task:'Treasury Audit — run the weekly strategic sweeps',seg:'10–25 min',done:false},
+    {task:'Treasury Audit — confirm actual pay in the Paycheck Planner, run the weekly strategic sweeps',seg:'10–25 min',done:false},
     {task:'Pantry Walkthrough — check inventory staples',seg:'25–35 min',done:false},
     {task:'Task Delegation — assign chores below & confirm owners',seg:'35–45 min',done:false}
   ],
@@ -820,9 +816,33 @@ function migrate(s){
   if(!s.debtStrategy)s.debtStrategy='avalanche';
   if(s.debtExtra==null)s.debtExtra=0;
   if(!s.sweeps)s.sweeps=[];
-  if(!s.pay)s.pay=[];
   if(!s.events)s.events=[];
   if(!s.chores)s.chores=[];
+  // Income & Pay Schedule used to be two separate boxes (a monthly income
+  // total, and a separate paycheck/frequency/date row). They're merged now —
+  // fold any legacy Pay Schedule rows into the matching income row by name,
+  // then retire the old separate list.
+  if(Array.isArray(s.pay)&&s.pay.length){
+    const words=t=>String(t||'').toLowerCase().split(/\W+/).filter(w=>w.length>2);
+    s.pay.forEach(p=>{
+      const pw=words(p.source||p.name);
+      const match=s.income.find(r=>{const rw=words(r.source);return rw.some(w=>pw.includes(w));});
+      if(match){
+        // The legacy Pay Schedule row's amount was already a true per-paycheck
+        // figure — use it to replace the old monthly total, otherwise a
+        // non-monthly frequency would make monthlyEquivalent() wildly wrong.
+        if(p.freq)match.freq=p.freq;
+        if(p.anchor)match.anchor=p.anchor;
+        if(p.amount!=null)match.amount=+p.amount||match.amount;
+      }
+    });
+  }
+  delete s.pay;
+  s.income.forEach(r=>{
+    if(!r.freq)r.freq='monthly';
+    if(!r.anchor)r.anchor=new Date().toISOString().slice(0,10);
+    if(!r.actuals)r.actuals={};
+  });
   s.overhead.forEach(o=>{if(o.due===undefined)o.due=0;});
   if(s.lastBackup===undefined)s.lastBackup=null;
   return s;
@@ -841,8 +861,14 @@ document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
   window.scrollTo({top:0,behavior:'smooth'});
 }));
 
+function monthlyEquivalent(r){
+  const amt=+r.amount||0;
+  if(r.freq==='weekly')return amt*52/12;
+  if(r.freq==='biweekly')return amt*26/12;
+  return amt; // monthly (or unset — treated as an already-monthly figure)
+}
 function calc(){
-  const income=state.income.reduce((s,r)=>s+(+r.amount||0),0);
+  const income=state.income.reduce((s,r)=>s+monthlyEquivalent(r),0);
   const reclaimed=state.overhead.filter(r=>r.action==='Prune (Cancel)').reduce((s,r)=>s+(+r.cost||0),0);
   const overhead=state.overhead.reduce((s,r)=>s+(+r.cost||0),0)-reclaimed;
   const margin=income-overhead;
@@ -873,17 +899,21 @@ function renderAlloc(container,editable){
 function setAlloc(k,v){state.alloc[k]=+v||0;save();renderAll();}
 
 const INCOME_TYPES=['Primary','Secondary/Side-Hustle','Passive'];
+const FREQS=[['weekly','Weekly'],['biweekly','Every 2 weeks'],['monthly','Monthly']];
 function renderIncome(){
   const tb=document.querySelector('#incomeTable tbody');
   tb.innerHTML=state.income.map((r,i)=>`<tr>
     <td><input value="${esc(r.source)}" onchange="upd('income',${i},'source',this.value)" placeholder="e.g. Primary Salary"></td>
-    <td><input type="number" step="0.01" value="${r.amount}" onchange="upd('income',${i},'amount',this.value)"></td>
+    <td><input type="number" step="0.01" value="${r.amount}" onchange="upd('income',${i},'amount',this.value)" title="What you actually receive each paycheck"></td>
+    <td><select onchange="upd('income',${i},'freq',this.value)">${FREQS.map(f=>`<option value="${f[0]}" ${f[0]===(r.freq||'monthly')?'selected':''}>${f[1]}</option>`).join('')}</select></td>
+    <td><input type="date" value="${r.anchor||''}" onchange="upd('income',${i},'anchor',this.value)"></td>
+    <td><span class="cell-output" style="display:block">${money0(monthlyEquivalent(r))}</span></td>
     <td><select onchange="upd('income',${i},'type',this.value)">${INCOME_TYPES.map(t=>`<option ${t===r.type?'selected':''}>${t}</option>`).join('')}</select></td>
     <td><button class="icon-btn" title="Remove" onclick="del('income',${i})">✕</button></td>
-  </tr>`).join('')||`<tr><td colspan="4" class="empty">No income sources yet — add one below.</td></tr>`;
+  </tr>`).join('')||`<tr><td colspan="7" class="empty">No income sources yet — add one below.</td></tr>`;
   document.getElementById('incomeTotal').textContent=money(calc().income);
 }
-function addIncome(){state.income.push({source:'',amount:0,type:'Primary'});save();renderAll();}
+function addIncome(){state.income.push({source:'',amount:0,freq:'monthly',anchor:new Date().toISOString().slice(0,10),type:'Primary',actuals:{}});save();renderAll();}
 
 const TIERS=['10% Tithe','Shelter (Wall 1)','Food (Wall 2)','Utilities (Wall 3)','Transportation (Wall 4)','Healthcare Insurances','Debt Minimums'];
 const ACTIONS=['Keep (Essential)','Audit (Negotiate)','Prune (Cancel)'];
@@ -1177,7 +1207,7 @@ function addVault(){state.vault.push({name:'New record',folder:FOLDERS[0],type:D
 function upd(list,i,field,val){
   if(NUM_FIELDS.has(field))val=parseFloat(val)||0;
   state[list][i][field]=val;save();
-  if(list==='income'||list==='overhead'){renderIncome();renderOverhead();renderEngine();renderTreasuryAlloc();renderSweeps();renderEmergency();renderDashboard();}
+  if(list==='income'||list==='overhead'){renderIncome();renderOverhead();renderEngine();renderTreasuryAlloc();renderSweeps();renderEmergency();renderDashboard();renderCalendar();}
   else if(list==='sweeps'){renderSweeps();}
   else if(list==='debts'){renderDebt();renderDashboard();}
   else if(list==='maint'){renderMaint();renderDashboard();}
@@ -1207,7 +1237,7 @@ function importData(e){
 }
 function restoreDefaults(){if(confirm('Load the sample household? This replaces your current data.')){state=DEFAULTS();save();renderAll();}}
 function clearAll(){if(confirm('Clear everything and start from a blank household? This cannot be undone.')){
-  state={income:[],overhead:[],pay:[],events:[],chores:[],alloc:{reserves:30,equity:40,lifestyle:30},sweeps:[],goals:{emergency:{monthsTarget:3,saved:0},savings:[],sinking:[]},debts:[],debtStrategy:'avalanche',debtExtra:0,reset:[],maint:[],plays:[],vault:[],lastBackup:null};
+  state={income:[],overhead:[],events:[],chores:[],alloc:{reserves:30,equity:40,lifestyle:30},sweeps:[],goals:{emergency:{monthsTarget:3,saved:0},savings:[],sinking:[]},debts:[],debtStrategy:'avalanche',debtExtra:0,reset:[],maint:[],plays:[],vault:[],lastBackup:null};
   save();renderAll();}}
 
 function showWelcome(){document.getElementById('welcome').classList.remove('hide');}
@@ -1234,8 +1264,9 @@ function printPlan(){
    ============================================================
    How it works, in plain terms:
    • Bills come from the Treasury tab (each has a Due Day 1–31).
-   • Paychecks come from the Pay Schedule (frequency + one real
-     pay date as an anchor). We project every future payday from
+   • Paychecks come from each Income row on Treasury (net amount per
+     paycheck + frequency + one real pay date as an anchor — one box,
+     no separate Pay Schedule). We project every future payday from
      that anchor: weekly = +7 days, biweekly = +14 days, monthly
      = same day each month.
    • The Calendar draws paydays + bills + meals + routines + family
@@ -1243,6 +1274,11 @@ function printPlan(){
    • The Paycheck Planner assigns each bill to the most recent
      paycheck that lands on or before its due date (the money that's
      already in hand), so you see exactly which check covers what.
+   • Each paycheck starts as PLANNED (projected from Income). During
+     the Weekly Reset, the actual amount can be confirmed per paycheck
+     (state.income[i].actuals[dateISO]) — once confirmed, that real
+     number replaces the projection everywhere it's used, so a
+     shortfall shows up immediately instead of floating unnoticed.
    ============================================================ */
 const DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -1294,7 +1330,14 @@ function eventOccurrences(ev,start,end){
 /* Everything dated within a window: paydays, bills, events. */
 function collectOccurrences(start,end){
   const items=[];
-  state.pay.forEach(p=>genPaydays(p,start,end).forEach(d=>items.push({date:d,type:'payday',title:p.name,amount:+p.amount||0})));
+  state.income.forEach(r=>{
+    if(!r.anchor)return;
+    genPaydays(r,start,end).forEach(d=>{
+      const key=dISO(d);
+      const amt=(r.actuals&&r.actuals[key]!=null)?+r.actuals[key]:(+r.amount||0);
+      items.push({date:d,type:'payday',title:r.source||'Paycheck',amount:amt});
+    });
+  });
   state.overhead.forEach(o=>{
     if(o.action==='Prune (Cancel)'||!(+o.due>=1))return;
     let cur=new Date(start.getFullYear(),start.getMonth(),1);const stop=new Date(end.getFullYear(),end.getMonth()+1,1);
@@ -1369,46 +1412,59 @@ function goalsMonthlyNeed(){
   (state.goals.savings||[]).forEach(g=>{if(g.date){const m=monthsUntil(g.date);t+=m?Math.max(0,(g.target-g.saved))/m:0;}});
   return t;
 }
+function setActualPay(incomeIdx,dateKey,val){
+  const r=state.income[incomeIdx];if(!r)return;
+  if(!r.actuals)r.actuals={};
+  if(val===''||val==null)delete r.actuals[dateKey];
+  else r.actuals[dateKey]=parseFloat(val)||0;
+  save();renderCalendar();
+}
 function renderPaycheckPlanner(){
   const y=calView.y,m=calView.m;
   const mStart=new Date(y,m,1),mEnd=new Date(y,m,daysInMonth(y,m));
   let checks=[];
-  state.pay.forEach(p=>genPaydays(p,mStart,mEnd).forEach(d=>checks.push({date:d,name:p.name,amount:+p.amount||0,bills:[]})));
+  state.income.forEach((r,ri)=>{
+    if(!r.anchor)return;
+    genPaydays(r,mStart,mEnd).forEach(d=>{
+      const key=dISO(d);
+      const planned=+r.amount||0;
+      const actual=(r.actuals&&r.actuals[key]!=null)?+r.actuals[key]:null;
+      checks.push({date:d,name:r.source||'Paycheck',planned,actual,incomeIdx:ri,dateKey:key,bills:[]});
+    });
+  });
   checks.sort((a,b)=>a.date-b.date);
   const el=document.getElementById('paycheckPlanner');
-  if(!checks.length){el.innerHTML=`<div class="empty">No paydays fall in ${MONTHS[m]} ${y}. Add a paycheck under Pay Schedule on the Treasury tab, then use ‹ › to move months.</div>`;return;}
+  if(!checks.length){el.innerHTML=`<div class="empty">No paydays fall in ${MONTHS[m]} ${y}. Add an income source on the Treasury tab, then use ‹ › to move months.</div>`;return;}
   const bills=[];
   state.overhead.forEach(o=>{if(o.action!=='Prune (Cancel)'&&+o.due>=1){const dd=new Date(y,m,Math.min(+o.due,daysInMonth(y,m)));bills.push({date:dd,title:o.category,amount:+o.cost||0});}});
   bills.sort((a,b)=>a.date-b.date);
   bills.forEach(b=>{let idx=-1;for(let i=0;i<checks.length;i++){if(checks[i].date<=b.date)idx=i;}if(idx<0)idx=0;checks[idx].bills.push(b);});
   const perGoal=goalsMonthlyNeed()/checks.length;
   el.innerHTML=checks.map(c=>{
+    const amt=c.actual!=null?c.actual:c.planned;
     const billSum=c.bills.reduce((s,b)=>s+b.amount,0);
-    const leftover=c.amount-billSum-perGoal;
+    const leftover=amt-billSum-perGoal;
+    let variance='';
+    if(c.actual!=null){
+      const diff=c.actual-c.planned;
+      if(Math.abs(diff)<0.5)variance='<span class="pill active">✅ Matched planned</span>';
+      else if(diff<0)variance=`<span class="pill overdue">▼ ${money0(Math.abs(diff))} short of planned</span>`;
+      else variance=`<span class="pill soon">▲ ${money0(diff)} more than planned</span>`;
+    }
     return `<div class="pcheck ${leftover<0?'short':''}">
-      <div class="pcheck-top"><span class="pc-date">${DOW[c.date.getDay()]} ${MONTHS[c.date.getMonth()].slice(0,3)} ${c.date.getDate()}</span><span class="pc-src">${esc(c.name)}</span><span class="pc-in">+${money0(c.amount)}</span></div>
+      <div class="pcheck-top"><span class="pc-date">${DOW[c.date.getDay()]} ${MONTHS[c.date.getMonth()].slice(0,3)} ${c.date.getDate()}</span><span class="pc-src">${esc(c.name)}</span><span class="pc-in">Planned ${money0(c.planned)}</span></div>
+      <div class="pcheck-actual">
+        <label>Actual received</label>
+        <input type="number" step="0.01" placeholder="${c.planned}" value="${c.actual!=null?c.actual:''}" onchange="setActualPay(${c.incomeIdx},'${c.dateKey}',this.value)">
+        ${variance||'<span class="pc-unconfirmed">Not yet confirmed</span>'}
+      </div>
       ${c.bills.map(b=>`<div class="pcheck-bill"><span>${esc(b.title)}</span><span style="color:var(--muted);font-size:.76rem">due ${b.date.getMonth()+1}/${b.date.getDate()}</span><span class="b-amt">−${money0(b.amount)}</span></div>`).join('')||'<div class="pcheck-bill" style="color:var(--muted)">No fixed bills fall to this paycheck</div>'}
       ${perGoal>0.5?`<div class="pcheck-bill"><span>Savings &amp; funds set-aside</span><span style="color:var(--muted);font-size:.76rem">goals</span><span class="b-amt">−${money0(perGoal)}</span></div>`:''}
       <div class="pcheck-foot"><span>Left after this check</span><span class="lo ${leftover<0?'neg':'pos'}">${money0(leftover)}</span></div>
+      ${c.actual!=null&&c.actual<c.planned&&leftover>=0?`<div class="pcheck-note">The Four Walls above are covered in full — this shortfall came out of what would have gone to Reserves, Equity &amp; Lifestyle this check.</div>`:''}
     </div>`;
   }).join('');
 }
-
-/* ---- Pay Schedule table ---- */
-const FREQS=[['weekly','Weekly'],['biweekly','Every 2 weeks'],['monthly','Monthly']];
-function renderPay(){
-  const tb=document.querySelector('#payTable tbody');
-  tb.innerHTML=state.pay.map((p,i)=>`<tr>
-    <td><input value="${esc(p.name)}" onchange="updPay(${i},'name',this.value)" placeholder="e.g. Primary Paycheck"></td>
-    <td><select onchange="updPay(${i},'freq',this.value)">${FREQS.map(f=>`<option value="${f[0]}" ${f[0]===p.freq?'selected':''}>${f[1]}</option>`).join('')}</select></td>
-    <td><input type="date" value="${p.anchor||''}" onchange="updPay(${i},'anchor',this.value)"></td>
-    <td><input type="number" step="0.01" value="${p.amount}" onchange="updPay(${i},'amount',this.value)"></td>
-    <td><button class="icon-btn" onclick="delPay(${i})">✕</button></td>
-  </tr>`).join('')||`<tr><td colspan="5" class="empty">No paychecks yet — add one below.</td></tr>`;
-}
-function updPay(i,f,v){if(f==='amount')v=parseFloat(v)||0;state.pay[i][f]=v;save();renderCalendar();}
-function addPay(){state.pay.push({name:'New paycheck',freq:'biweekly',anchor:isoMostRecentWeekday(5),amount:0});save();renderCalendar();}
-function delPay(i){state.pay.splice(i,1);save();renderCalendar();}
 
 /* ---- Events / Meals / Routines ---- */
 const EV_TYPES=[['family','Family'],['routine','Routine'],['meal','Meal'],['note','Note']];
@@ -1499,7 +1555,7 @@ function printCalendar(){
   setTimeout(()=>pc.classList.remove('printing'),600);
 }
 function renderCalendar(){
-  renderPay();renderEventList();renderChores();
+  renderEventList();renderChores();
   if(calView.mode==='week')renderCalWeek();else renderCalMonth();
   renderPaycheckPlanner();
 }
