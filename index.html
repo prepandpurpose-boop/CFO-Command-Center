@@ -626,6 +626,27 @@
     </div>
 
     <div class="card">
+      <div class="card-title">📋 Example: What a Filled-In Row Looks Like</div>
+      <hr class="gold-rule">
+      <div class="card-note">Your Treasury Ledger starts completely blank — every table is empty until you add your own rows. This is a mock example only (not your data, and nothing here is connected to your ledger) showing what a filled-in row looks like.</div>
+      <div style="font-weight:600;margin:14px 0 6px">Income &amp; Pay Schedule</div>
+      <div class="tbl-scroll">
+        <table>
+          <thead><tr><th style="min-width:170px">Cash Flow Source</th><th style="width:120px">Net Amount</th><th style="width:150px">Frequency</th><th style="width:160px">A Real Pay Date</th><th style="width:110px">≈ Monthly</th><th style="width:170px">Source Type</th></tr></thead>
+          <tbody><tr><td>Jordan's Paycheck</td><td>$950.00</td><td>Every 2 weeks</td><td>2026-08-14</td><td><span class="cell-output" style="display:block">≈ $2,058</span></td><td>Primary</td></tr></tbody>
+        </table>
+      </div>
+      <div style="font-weight:600;margin:18px 0 6px">Fixed Overhead</div>
+      <div class="tbl-scroll">
+        <table>
+          <thead><tr><th style="min-width:170px">Expense Category</th><th style="width:120px">Monthly Cost</th><th style="width:90px">Due Day</th><th style="width:170px">Expense Tier</th><th style="width:150px">Stewardship</th></tr></thead>
+          <tbody><tr><td>Rent or Mortgage</td><td>$1,800</td><td>1</td><td>Shelter (Wall 1)</td><td>Keep (Essential)</td></tr></tbody>
+        </table>
+      </div>
+      <p style="margin-top:14px">Want to click around a fully filled-out household before you enter your own numbers? Click <strong>↺ Load sample household</strong> in the bottom toolbar — it swaps in a complete working example (income, bills, goals, debt, calendar events, all of it) so you can see how everything connects. When you're ready to start for real, click <strong>🗑 Clear everything</strong> to wipe it back to blank.</p>
+    </div>
+
+    <div class="card">
       <div class="card-title">💵 How does it know when I get paid?</div>
       <hr class="gold-rule">
       <p>It doesn't guess — you tell it once, on the <strong>Treasury</strong> tab, right in the Income &amp; Pay Schedule table. For each income source you enter three things: what you actually receive each paycheck, how often it arrives, and <em>one real date you were actually paid</em> as the anchor. No converting to a monthly figure yourself — that column calculates itself.</p>
@@ -802,10 +823,12 @@ const DEFAULTS=()=>({
   lastBackup:null
 });
 
+const BLANK=()=>({income:[],overhead:[],events:[],chores:[],alloc:{reserves:30,equity:40,lifestyle:30},sweeps:[],goals:{emergency:{monthsTarget:3,saved:0},savings:[],sinking:[]},debts:[],debtStrategy:'avalanche',debtExtra:0,reset:[],maint:[],plays:[],vault:[],lastBackup:null});
+
 let state=load();
 function load(){
   try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.income){return migrate(s);}}catch(e){}
-  return DEFAULTS();
+  return BLANK();
 }
 function migrate(s){
   const d=DEFAULTS();
@@ -1238,7 +1261,7 @@ function importData(e){
 }
 function restoreDefaults(){if(confirm('Load the sample household? This replaces your current data.')){state=DEFAULTS();save();renderAll();}}
 function clearAll(){if(confirm('Clear everything and start from a blank household? This cannot be undone.')){
-  state={income:[],overhead:[],events:[],chores:[],alloc:{reserves:30,equity:40,lifestyle:30},sweeps:[],goals:{emergency:{monthsTarget:3,saved:0},savings:[],sinking:[]},debts:[],debtStrategy:'avalanche',debtExtra:0,reset:[],maint:[],plays:[],vault:[],lastBackup:null};
+  state=BLANK();
   save();renderAll();}}
 
 function showWelcome(){document.getElementById('welcome').classList.remove('hide');}
