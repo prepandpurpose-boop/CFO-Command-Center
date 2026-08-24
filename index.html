@@ -345,7 +345,7 @@
   <section class="panel" id="calendar">
     <div class="section-head">
       <h2>The Household Calendar</h2>
-      <div class="sub">One shared view of the whole household — paydays, bill due dates, meals, routines, and family events. Every bill with a Due Day and every paycheck flows here automatically, and the Paycheck Planner below shows exactly which check covers which expense.</div>
+      <div class="sub">One shared view of the whole household — paydays, bill due dates, meals, routines, and family events. Set up your bills and Pay Schedule on the <strong>Treasury</strong> tab and they flow here automatically; the Paycheck Planner below shows exactly which check covers which expense.</div>
     </div>
 
     <div class="card">
@@ -382,19 +382,6 @@
     </div>
 
     <div class="card">
-      <div class="card-title">🗓️ Pay Schedule</div>
-      <hr class="gold-rule">
-      <div class="card-note">Add each earner and how often they're paid — weekly, every two weeks, or monthly. Enter one real pay date as the anchor and the calendar projects every future payday from it.</div>
-      <div class="tbl-scroll">
-        <table id="payTable">
-          <thead><tr><th style="min-width:150px">Paycheck / Earner</th><th style="width:150px">Frequency</th><th style="width:160px">A real pay date</th><th style="width:130px">Net amount</th><th style="width:44px"></th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-      <div class="card-actions"><button class="btn btn-ghost btn-sm" onclick="addPay()">＋ Add a paycheck</button></div>
-    </div>
-
-    <div class="card">
       <div class="card-title">📌 Events, Meals &amp; Routines</div>
       <hr class="gold-rule">
       <div class="card-note">Anything that isn't a bill or a paycheck: family plans, weekly routines, and meals. Attach a Meal Builder PDF to any meal and open it in one tap from the calendar. PDFs are stored on this device.</div>
@@ -424,6 +411,19 @@
         </table>
       </div>
       <div class="card-actions"><button class="btn btn-ghost btn-sm" onclick="addIncome()">＋ Add income source</button></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🗓️ Pay Schedule <span class="badge">Feeds the Calendar</span></div>
+      <hr class="gold-rule">
+      <div class="card-note">Add each earner and how often they're paid — weekly, every two weeks, or monthly. Enter one real pay date as the anchor and the app projects every future payday from it — that's how the Calendar and Paycheck Planner know exactly when your money lands.</div>
+      <div class="tbl-scroll">
+        <table id="payTable">
+          <thead><tr><th style="min-width:150px">Paycheck / Earner</th><th style="width:150px">Frequency</th><th style="width:160px">A real pay date</th><th style="width:130px">Net amount</th><th style="width:44px"></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="card-actions"><button class="btn btn-ghost btn-sm" onclick="addPay()">＋ Add a paycheck</button></div>
     </div>
 
     <div class="card">
@@ -623,7 +623,7 @@
       <hr class="gold-rule">
       <ol class="howto-steps">
         <li><strong>Treasury.</strong> Enter every income source, then every fixed bill. Give each bill a <strong>Due Day</strong> (1–31) — that one number is what makes the Calendar and Paycheck Planner work automatically. Leave it at 0 for anything with no fixed date, like weekly groceries.</li>
-        <li><strong>Calendar → Pay Schedule.</strong> Add each paycheck: how often it lands (weekly, every 2 weeks, or monthly) and <em>one real pay date</em> you can point to. The app projects every future payday from that single date — see the FAQ below for exactly how.</li>
+        <li><strong>Treasury → Pay Schedule.</strong> Add each paycheck: how often it lands (weekly, every 2 weeks, or monthly) and <em>one real pay date</em> you can point to. The app projects every future payday from that single date — see the FAQ below for exactly how.</li>
         <li><strong>Dashboard.</strong> Nothing to enter here — it's your at-a-glance summary, calculated automatically from Treasury.</li>
         <li><strong>Goals &amp; Debt.</strong> Set your Emergency Fund target, any Savings Goals, Sinking Funds for irregular costs, and your Debt Payoff strategy.</li>
         <li><strong>Weekly Reset.</strong> Run the Sunday agenda, and use the Household Chores list to assign chores by day — assigned chores show up on the Calendar automatically, tagged with each person's name.</li>
@@ -699,7 +699,7 @@
       <p>This is your household&rsquo;s private financial operating system — treasury, calendar, savings, debt, maintenance, emergency playbooks, and a document vault, all in one calm place. Start in this order:</p>
       <ol class="howto-steps" style="margin:14px 0">
         <li><strong>Treasury</strong> — enter income and bills first, with a Due Day on each bill.</li>
-        <li><strong>Calendar → Pay Schedule</strong> — tell it how often you're paid and one real pay date, so it knows exactly when your money lands.</li>
+        <li><strong>Treasury → Pay Schedule</strong> — tell it how often you're paid and one real pay date, so it knows exactly when your money lands.</li>
         <li><strong>Dashboard, Goals &amp; Debt, Weekly Reset</strong> — everything else flows from there.</li>
       </ol>
       <p>Everything you enter is saved <strong>only in this browser, on this device.</strong> Nothing is uploaded or shared. Use <strong>Back up my data</strong> regularly, and <strong>Print / Save as PDF</strong> to keep a copy on paper.</p>
@@ -1376,7 +1376,7 @@ function renderPaycheckPlanner(){
   state.pay.forEach(p=>genPaydays(p,mStart,mEnd).forEach(d=>checks.push({date:d,name:p.name,amount:+p.amount||0,bills:[]})));
   checks.sort((a,b)=>a.date-b.date);
   const el=document.getElementById('paycheckPlanner');
-  if(!checks.length){el.innerHTML=`<div class="empty">No paydays fall in ${MONTHS[m]} ${y}. Add a paycheck in the Pay Schedule below, then use ‹ › to move months.</div>`;return;}
+  if(!checks.length){el.innerHTML=`<div class="empty">No paydays fall in ${MONTHS[m]} ${y}. Add a paycheck under Pay Schedule on the Treasury tab, then use ‹ › to move months.</div>`;return;}
   const bills=[];
   state.overhead.forEach(o=>{if(o.action!=='Prune (Cancel)'&&+o.due>=1){const dd=new Date(y,m,Math.min(+o.due,daysInMonth(y,m)));bills.push({date:dd,title:o.category,amount:+o.cost||0});}});
   bills.sort((a,b)=>a.date-b.date);
