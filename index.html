@@ -1012,14 +1012,17 @@ function renderEmergency(){
   const c=calc();const ef=state.goals.emergency;
   const target=c.overhead*(+ef.monthsTarget||0);
   const covered=c.overhead>0?ef.saved/c.overhead:0;
+  const noOverhead=c.overhead<=0;
   document.getElementById('emergencyBox').innerHTML=`
     <div class="fldgrid" style="max-width:520px;margin-bottom:4px">
       <label class="fld"><span>Months of overhead to hold</span><input type="number" min="1" step="1" value="${ef.monthsTarget}" onchange="setEmMonths(this.value)"></label>
       <label class="fld"><span>Currently saved</span><input type="number" min="0" step="1" value="${ef.saved}" onchange="setEmSaved(this.value)"></label>
-      <label class="fld"><span>Target (auto)</span><div class="cell-output">${money0(target)}</div></label>
+      <label class="fld"><span>Target (auto)</span><div class="cell-output">${noOverhead?'—':money0(target)}</div></label>
     </div>
-    ${progressBar(ef.saved,target,'#8f3a2f')}
-    <div class="goalmeta"><span><strong>${money0(ef.saved)}</strong> of ${money0(target)}</span><span>${covered.toFixed(1)} months of expenses covered</span></div>`;
+    ${noOverhead
+      ?`<div class="card-note" style="margin-top:10px">Add your Fixed Overhead expenses on the <strong>Treasury</strong> tab first — the target here is calculated automatically from that total (months to hold × overhead), so it has nothing to calculate until there's overhead entered.</div>`
+      :`${progressBar(ef.saved,target,'#8f3a2f')}
+    <div class="goalmeta"><span><strong>${money0(ef.saved)}</strong> of ${money0(target)}</span><span>${covered.toFixed(1)} months of expenses covered</span></div>`}`;
 }
 function setEmMonths(v){state.goals.emergency.monthsTarget=parseFloat(v)||0;save();renderEmergency();renderDashboard();}
 function setEmSaved(v){state.goals.emergency.saved=parseFloat(v)||0;save();renderEmergency();renderDashboard();}
@@ -1135,8 +1138,8 @@ function renderDashboard(){
   renderAlloc(document.getElementById('dashAlloc'),false);
   const ef=state.goals.emergency;
   const covered=c.overhead>0?ef.saved/c.overhead:0;
-  document.getElementById('dashEF').textContent=covered.toFixed(1)+' mo';
-  document.getElementById('dashEFhint').textContent=`${money0(ef.saved)} of ${money0(c.overhead*(+ef.monthsTarget||0))} target`;
+  document.getElementById('dashEF').textContent=c.overhead>0?covered.toFixed(1)+' mo':'—';
+  document.getElementById('dashEFhint').textContent=c.overhead>0?`${money0(ef.saved)} of ${money0(c.overhead*(+ef.monthsTarget||0))} target`:'add Treasury overhead to set a target';
   const totalSaved=(+ef.saved||0)+state.goals.savings.reduce((s,g)=>s+(+g.saved||0),0)+state.goals.sinking.reduce((s,g)=>s+(+g.saved||0),0);
   document.getElementById('dashSaved').textContent=money0(totalSaved);
   const sim=simulateDebts();
