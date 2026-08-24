@@ -413,7 +413,7 @@
       <div class="card-note">One box, one entry per income source. Type what you actually receive each paycheck, how often it lands, and one real pay date — that's it. The monthly total, the Calendar, and the Paycheck Planner all calculate themselves from those three numbers; you never have to convert anything in your head.</div>
       <div class="tbl-scroll">
         <table id="incomeTable">
-          <thead><tr><th style="min-width:170px">Cash Flow Source</th><th style="width:120px">Net Amount</th><th style="width:150px">Frequency</th><th style="width:160px">A Real Pay Date</th><th style="width:110px">≈ Monthly</th><th style="width:170px">Source Type</th><th style="width:44px"></th></tr></thead>
+          <thead><tr><th style="min-width:170px">Cash Flow Source</th><th style="width:120px">Net Amount</th><th style="width:150px">Frequency</th><th style="width:160px">A Real Pay Date</th><th style="width:110px" title="Weekly = amount × 52 ÷ 12. Biweekly = amount × 26 ÷ 12. A month isn't exactly 4 or 2 pay periods — some months land an extra paycheck, so this is the true year-round average, not amount × 4.">≈ Monthly ⓘ</th><th style="width:170px">Source Type</th><th style="width:44px"></th></tr></thead>
           <tbody></tbody>
           <tfoot><tr><td class="foot-lbl">Total Net Cash Flow</td><td colspan="3"></td><td class="foot-val" id="incomeTotal">$0</td><td colspan="2"></td></tr></tfoot>
         </table>
@@ -661,6 +661,13 @@
         <li><strong>Monthly</strong> — the same day of the month, every month, from your anchor.</li>
       </ul>
       <p style="margin-top:10px">If you have more than one income (a spouse's paycheck, a side hustle), add each as its own row — the Paycheck Planner combines them all.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🧮 Why isn't ≈ Monthly just my paycheck × 4?</div>
+      <hr class="gold-rule">
+      <p>Because a month isn't exactly 4 weeks. There are <strong>52 weeks in a year</strong>, not 48 (12 × 4) — so if you're paid weekly, the honest year-round average is <strong>paycheck × 52 ÷ 12</strong>, not × 4. A $504 weekly paycheck isn't $2,016/month, it's $2,184/month. Same idea for biweekly: it's × 26 ÷ 12, not × 2.</p>
+      <p style="margin-top:10px">That "extra" $168 a month isn't made up — it's real money you actually receive. Weekly and biweekly earners get an extra paycheck a few times a year (a 5th Friday in the month, for example), and if you budget off × 4 or × 2 instead of the true average, you'll systematically underbudget every month and then get "surprised" by a bigger check later. The whole point of tracking your real pay frequency instead of assuming one flat monthly number is to catch exactly this — so ≈ Monthly is deliberately the precise 52 ÷ 12 (or 26 ÷ 12) average, never a rounded shortcut.</p>
     </div>
 
     <div class="card">
@@ -968,7 +975,7 @@ function renderIncome(){
     <td><input type="number" step="0.01" value="${r.amount}" onchange="upd('income',${i},'amount',this.value)" title="What you actually receive each paycheck"></td>
     <td><select onchange="upd('income',${i},'freq',this.value)">${FREQS.map(f=>`<option value="${f[0]}" ${f[0]===(r.freq||'monthly')?'selected':''}>${f[1]}</option>`).join('')}</select></td>
     <td><input type="date" value="${r.anchor||''}" onchange="upd('income',${i},'anchor',this.value)"></td>
-    <td><span class="cell-output" style="display:block">${money0(monthlyEquivalent(r))}</span></td>
+    <td><span class="cell-output" style="display:block">${money(monthlyEquivalent(r))}</span></td>
     <td><select onchange="upd('income',${i},'type',this.value)">${INCOME_TYPES.map(t=>`<option ${t===r.type?'selected':''}>${t}</option>`).join('')}</select></td>
     <td><button class="icon-btn" title="Remove" onclick="del('income',${i})">✕</button></td>
   </tr>`).join('')||`<tr><td colspan="7" class="empty">No income sources yet — add one below.</td></tr>`;
@@ -1103,7 +1110,9 @@ function renderSinking(){
   el.innerHTML=state.goals.sinking.map((g,i)=>{
     const m=monthsUntil(g.due);
     const need=m?Math.max(0,(g.target-g.saved))/m:0;
-    totalMonthly+=need;
+    // Add the ROUNDED figure (what the row actually displays), not the raw
+    // one — otherwise the total below won't match adding up what's on screen.
+    totalMonthly+=Math.round(need);
     return `<div class="goalrow">
       <div class="gtop"><input class="gname" value="${esc(g.name)}" onchange="updGoal('sinking',${i},'name',this.value)" placeholder="Fund name">
       <button class="icon-btn" onclick="delGoal('sinking',${i})">✕</button></div>
@@ -1518,10 +1527,17 @@ function renderPaycheckPlanner(){
   bills.sort((a,b)=>a.date-b.date);
   bills.forEach(b=>{let idx=-1;for(let i=0;i<checks.length;i++){if(checks[i].date<=b.date)idx=i;}if(idx<0)idx=0;checks[idx].bills.push(b);});
   const perGoal=goalsMonthlyNeed()/checks.length;
+  const perGoalR=Math.round(perGoal);
   el.innerHTML=checks.map(c=>{
-    const amt=c.actual!=null?c.actual:c.planned;
-    const billSum=c.bills.reduce((s,b)=>s+b.amount,0);
-    const leftover=amt-billSum-perGoal;
+    // Round every line FIRST, then add the rounded lines together — so what's
+    // printed on screen (paycheck, each bill, the goals set-aside) always
+    // sums to the "Left after this check" figure exactly. Rounding the total
+    // separately from its rounded parts is how displayed numbers stop
+    // matching displayed totals.
+    const amtR=Math.round(c.actual!=null?c.actual:c.planned);
+    const billsR=c.bills.map(b=>({...b,amtR:Math.round(b.amount)}));
+    const billSum=billsR.reduce((s,b)=>s+b.amtR,0);
+    const leftover=amtR-billSum-perGoalR;
     let variance='';
     if(c.actual!=null){
       const diff=c.actual-c.planned;
@@ -1536,8 +1552,8 @@ function renderPaycheckPlanner(){
         <input type="number" step="0.01" placeholder="${c.planned}" value="${c.actual!=null?c.actual:''}" onchange="setActualPay(${c.incomeIdx},'${c.dateKey}',this.value)">
         ${variance||'<span class="pc-unconfirmed">Not yet confirmed</span>'}
       </div>
-      ${c.bills.map(b=>`<div class="pcheck-bill"><span>${esc(b.title)}</span><span style="color:var(--muted);font-size:.76rem">due ${b.date.getMonth()+1}/${b.date.getDate()}</span><span class="b-amt">−${money0(b.amount)}</span></div>`).join('')||'<div class="pcheck-bill" style="color:var(--muted)">No fixed bills fall to this paycheck</div>'}
-      ${perGoal>0.5?`<div class="pcheck-bill"><span>Savings &amp; funds set-aside</span><span style="color:var(--muted);font-size:.76rem">goals</span><span class="b-amt">−${money0(perGoal)}</span></div>`:''}
+      ${billsR.map(b=>`<div class="pcheck-bill"><span>${esc(b.title)}</span><span style="color:var(--muted);font-size:.76rem">due ${b.date.getMonth()+1}/${b.date.getDate()}</span><span class="b-amt">−${money0(b.amtR)}</span></div>`).join('')||'<div class="pcheck-bill" style="color:var(--muted)">No fixed bills fall to this paycheck</div>'}
+      ${perGoalR>0?`<div class="pcheck-bill"><span>Savings &amp; funds set-aside</span><span style="color:var(--muted);font-size:.76rem">goals</span><span class="b-amt">−${money0(perGoalR)}</span></div>`:''}
       <div class="pcheck-foot"><span>Left after this check</span><span class="lo ${leftover<0?'neg':'pos'}">${money0(leftover)}</span></div>
       ${c.actual!=null&&c.actual<c.planned&&leftover>=0?`<div class="pcheck-note">The Four Walls above are covered in full — this shortfall came out of what would have gone to Reserves, Equity &amp; Lifestyle this check.</div>`:''}
     </div>`;
