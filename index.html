@@ -678,7 +678,7 @@
     <div class="card">
       <div class="card-title">🛡️ Is Life Insurance a fixed expense?</div>
       <hr class="gold-rule">
-      <p>Yes — if anyone depends on your income, Life Insurance belongs on Treasury under Fixed Overhead, in the <strong>Insurance (Health &amp; Life)</strong> tier, right alongside health insurance. It's not optional in the way a subscription is; it's what keeps your family's Four Walls standing if your income stops suddenly.</p>
+      <p>Yes — if anyone depends on your income, Life Insurance belongs on Treasury under Fixed Overhead, as its own plain line with the <strong>Life Insurance</strong> tier, right below <strong>Health Insurance</strong>. It's not optional in the way a subscription is; it's what keeps your family's Four Walls standing if your income stops suddenly. If you already have Health Insurance on your ledger, a Life Insurance line is added automatically (at $0 until you fill in your real premium) — you never have to hunt for a place to put it.</p>
       <p style="margin-top:10px">One honest caveat: this isn't necessarily forever. As your Emergency Fund, savings, and net worth grow, you build the ability to <em>self-insure</em> — enough real wealth behind your family that a policy becomes less essential. Term life insurance in particular is often sized to cover you until that point, not for life. It's worth revisiting as your numbers change, not something to "set and forget" for thirty years.</p>
     </div>
 
@@ -775,9 +775,8 @@ const DEFAULTS=()=>({
     {category:'Groceries',cost:650,tier:'Food (Wall 2)',action:'Keep (Essential)',due:0},
     {category:'Electric / Gas / Water',cost:340,tier:'Utilities (Wall 3)',action:'Keep (Essential)',due:18},
     {category:'Auto & Fuel',cost:410,tier:'Transportation (Wall 4)',action:'Keep (Essential)',due:12},
-    {category:'Health Insurance',cost:300,tier:'Insurance (Health & Life)',action:'Keep (Essential)',due:5},
-    {category:'Term Life Insurance',cost:35,tier:'Insurance (Health & Life)',action:'Keep (Essential)',due:5},
-    {category:'Streaming Bundle',cost:0,tier:'Discretionary (Not a Wall)',action:'Prune (Cancel)',due:22}
+    {category:'Health Insurance',cost:300,tier:'Health Insurance',action:'Keep (Essential)',due:5},
+    {category:'Life Insurance',cost:35,tier:'Life Insurance',action:'Keep (Essential)',due:5}
   ],
   events:[
     {id:'ev1',title:'Sunday Executive Reset',date:isoMostRecentWeekday(0),type:'routine',recur:'weekly',notes:'45-min family meeting'},
@@ -885,7 +884,27 @@ function migrate(s){
     if(!r.anchor)r.anchor=new Date().toISOString().slice(0,10);
     if(!r.actuals)r.actuals={};
   });
-  s.overhead.forEach(o=>{if(o.due===undefined)o.due=0;});
+  s.overhead.forEach(o=>{
+    if(o.due===undefined)o.due=0;
+    // Expense Tier labels were renamed/added after this data was first saved —
+    // remap old tier text so the dropdown still shows the right selection
+    // instead of silently falling back to the first option in the list.
+    if(o.tier==='Healthcare Insurances'||o.tier==='Insurance (Health & Life)')o.tier='Health Insurance';
+    if(o.category==='Streaming Bundle'&&o.tier==='Debt Minimums')o.tier='Discretionary (Not a Wall)';
+  });
+  // The old sample data included a placeholder "Streaming Bundle" row inside
+  // Fixed Overhead — but a streaming subscription isn't fixed, it's a choice.
+  // Drop the untouched $0 placeholder version; leave alone anything you've
+  // actually given a real cost, since that's your data to keep or remove.
+  s.overhead=s.overhead.filter(o=>!(o.category==='Streaming Bundle'&&(+o.cost||0)===0));
+  // If Health Insurance is on the ledger but there's no separate Life Insurance
+  // line yet, add one (at $0, so it never changes anyone's totals) — Life
+  // Insurance deserves its own plain line, not a footnote on someone else's.
+  const hasHealth=s.overhead.findIndex(o=>/health insurance/i.test(o.category));
+  const hasLife=s.overhead.some(o=>/life insurance/i.test(o.category));
+  if(hasHealth>=0&&!hasLife){
+    s.overhead.splice(hasHealth+1,0,{category:'Life Insurance',cost:0,tier:'Life Insurance',action:'Keep (Essential)',due:0});
+  }
   if(s.lastBackup===undefined)s.lastBackup=null;
   return s;
 }
@@ -957,7 +976,7 @@ function renderIncome(){
 }
 function addIncome(){state.income.push({source:'',amount:0,freq:'monthly',anchor:new Date().toISOString().slice(0,10),type:'Primary',actuals:{}});save();renderAll();}
 
-const TIERS=['10% Tithe','Shelter (Wall 1)','Food (Wall 2)','Utilities (Wall 3)','Transportation (Wall 4)','Insurance (Health & Life)','Debt Minimums','Discretionary (Not a Wall)'];
+const TIERS=['10% Tithe','Shelter (Wall 1)','Food (Wall 2)','Utilities (Wall 3)','Transportation (Wall 4)','Health Insurance','Life Insurance','Debt Minimums','Discretionary (Not a Wall)'];
 const ACTIONS=['Keep (Essential)','Audit (Negotiate)','Prune (Cancel)'];
 function renderOverhead(){
   const tb=document.querySelector('#overheadTable tbody');
