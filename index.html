@@ -54,6 +54,8 @@
   .card-title{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:600;color:var(--green);display:flex;align-items:center;gap:10px;margin-bottom:4px;flex-wrap:wrap}
   .card-title .badge{margin-left:auto;font-family:'Jost',sans-serif;font-size:.62rem;letter-spacing:1.5px;text-transform:uppercase;background:var(--sage);color:var(--green);padding:4px 10px;border-radius:20px;font-weight:600}
   .card-note{color:var(--muted);font-size:.9rem;margin-bottom:16px}
+  .priority-note{background:#fff;border:1px solid var(--cream-dk);border-left:4px solid var(--gold);border-radius:8px;padding:14px 16px;font-size:.9rem;color:var(--ink);margin:0 0 22px;line-height:1.55}
+  .priority-note.done{border-left-color:var(--green)}
   .gold-rule{height:2px;background:linear-gradient(90deg,var(--gold),transparent);border:none;margin:2px 0 18px}
 
   .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:18px;margin-bottom:8px}
@@ -422,7 +424,7 @@
     <div class="card">
       <div class="card-title">🛡️ Non-Negotiable Fixed Overhead — The Four Walls</div>
       <hr class="gold-rule">
-      <div class="card-note">Mark any expense <strong>Prune (Cancel)</strong> to run a subscription-leak audit — its cost leaves overhead and is added to your Reclaimed Capital. Set a <strong>Due Day</strong> (1–31) and each bill flows automatically onto your Calendar and gets matched to the paycheck that covers it. Leave Due Day at 0 for costs with no fixed date (like weekly groceries).</div>
+      <div class="card-note">Mark any expense <strong>Prune (Cancel)</strong> to run a subscription-leak audit — its cost leaves overhead and is added to your Reclaimed Capital. Set a <strong>Due Day</strong> (1–31) and each bill flows automatically onto your Calendar and gets matched to the paycheck that covers it. Leave Due Day at 0 for costs with no fixed date (like weekly groceries). Streaming, cable, and cell phone plans aren't one of the Four Walls — they're a choice, not a non-negotiable — so tag them <strong>Discretionary (Not a Wall)</strong> and keep this table honest about what's actually fixed.</div>
       <div class="tbl-scroll">
         <table id="overheadTable">
           <thead><tr><th style="min-width:170px">Expense Category</th><th style="width:120px">Monthly Cost</th><th style="width:90px">Due Day</th><th style="width:170px">Expense Tier</th><th style="width:150px">Stewardship</th><th style="width:44px"></th></tr></thead>
@@ -480,6 +482,8 @@
       <div class="card-note">The foundation of a provisioned home. Target is set as a chosen number of months of your fixed overhead.</div>
       <div id="emergencyBox"></div>
     </div>
+
+    <div id="efPriority"></div>
 
     <div class="card">
       <div class="card-title">🎯 Savings Goals</div>
@@ -617,7 +621,7 @@
       <ol class="howto-steps">
         <li><strong>Treasury — Income &amp; Pay Schedule.</strong> For each income source, enter what you actually receive each paycheck, how often it lands (weekly, every 2 weeks, or monthly), and <em>one real pay date</em> you can point to. That's the only place you type an income number — the monthly total, the Calendar, and the Paycheck Planner all calculate themselves from it.</li>
         <li><strong>Treasury — Fixed Overhead.</strong> Enter every fixed bill and give each one a <strong>Due Day</strong> (1–31) — that's what makes the Calendar and Paycheck Planner match bills to paychecks automatically. Leave it at 0 for anything with no fixed date, like weekly groceries.</li>
-        <li><strong>Goals &amp; Debt.</strong> Set your Emergency Fund target, any Savings Goals, Sinking Funds for irregular costs, and your Debt Payoff strategy.</li>
+        <li><strong>Goals &amp; Debt.</strong> Set your Emergency Fund target first and get it fully funded before working on anything else here — the app will remind you where you stand. Then set up Savings Goals, Sinking Funds for irregular costs, and your Debt Payoff strategy.</li>
         <li><strong>Dashboard.</strong> Nothing to enter here — it's your at-a-glance summary, calculated automatically from Treasury and Goals &amp; Debt.</li>
         <li><strong>Calendar.</strong> Paydays and bills fill in automatically from Treasury, but you'll actively add and update quite a bit here: family events, recurring routines, and meals — including attaching a Meal Builder PDF to any meal — in the Events, Meals &amp; Routines card, and each paycheck's <em>confirmed actual</em> amount in the Paycheck Planner once it lands (see the FAQ below).</li>
         <li><strong>Weekly Reset.</strong> Run the Sunday agenda — confirm each paycheck's actual amount in the Calendar's Paycheck Planner, and use the Household Chores list to assign chores by day; assigned chores show up on the Calendar automatically, tagged with each person's name.</li>
@@ -663,6 +667,19 @@
       <div class="card-title">🧾 How bills get matched to a paycheck</div>
       <hr class="gold-rule">
       <p>Every bill on Treasury with a Due Day gets assigned to <strong>the most recent paycheck that lands on or before that due date</strong> — in other words, whichever check's money is already in hand when the bill is actually due. The Paycheck Planner on the Calendar tab lists each paycheck with its bills underneath it, and shows what's left over after they're covered (in red if a check comes up short).</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🎯 Emergency Fund first, then everything else</div>
+      <hr class="gold-rule">
+      <p>Sinking Funds and Savings Goals are really the same idea — money set aside ahead of time for something you know is coming. But before either one, get your <strong>Emergency Fund</strong> fully funded first. It's the only bucket that's there for what you <em>don't</em> see coming, and until it's full, a surprise expense has nowhere to come from except debt or one of your other goals. On the Goals &amp; Debt tab, you'll see a gold banner above Sinking Funds and Savings Goals reminding you where you stand until your Emergency Fund hits 100% — once it does, that banner turns green and it's genuinely time to direct your money toward the rest.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🛡️ Is Life Insurance a fixed expense?</div>
+      <hr class="gold-rule">
+      <p>Yes — if anyone depends on your income, Life Insurance belongs on Treasury under Fixed Overhead, in the <strong>Insurance (Health &amp; Life)</strong> tier, right alongside health insurance. It's not optional in the way a subscription is; it's what keeps your family's Four Walls standing if your income stops suddenly.</p>
+      <p style="margin-top:10px">One honest caveat: this isn't necessarily forever. As your Emergency Fund, savings, and net worth grow, you build the ability to <em>self-insure</em> — enough real wealth behind your family that a policy becomes less essential. Term life insurance in particular is often sized to cover you until that point, not for life. It's worth revisiting as your numbers change, not something to "set and forget" for thirty years.</p>
     </div>
 
     <div class="card">
@@ -758,8 +775,9 @@ const DEFAULTS=()=>({
     {category:'Groceries',cost:650,tier:'Food (Wall 2)',action:'Keep (Essential)',due:0},
     {category:'Electric / Gas / Water',cost:340,tier:'Utilities (Wall 3)',action:'Keep (Essential)',due:18},
     {category:'Auto & Fuel',cost:410,tier:'Transportation (Wall 4)',action:'Keep (Essential)',due:12},
-    {category:'Health Insurance',cost:300,tier:'Healthcare Insurances',action:'Keep (Essential)',due:5},
-    {category:'Streaming Bundle',cost:0,tier:'Debt Minimums',action:'Prune (Cancel)',due:22}
+    {category:'Health Insurance',cost:300,tier:'Insurance (Health & Life)',action:'Keep (Essential)',due:5},
+    {category:'Term Life Insurance',cost:35,tier:'Insurance (Health & Life)',action:'Keep (Essential)',due:5},
+    {category:'Streaming Bundle',cost:0,tier:'Discretionary (Not a Wall)',action:'Prune (Cancel)',due:22}
   ],
   events:[
     {id:'ev1',title:'Sunday Executive Reset',date:isoMostRecentWeekday(0),type:'routine',recur:'weekly',notes:'45-min family meeting'},
@@ -939,7 +957,7 @@ function renderIncome(){
 }
 function addIncome(){state.income.push({source:'',amount:0,freq:'monthly',anchor:new Date().toISOString().slice(0,10),type:'Primary',actuals:{}});save();renderAll();}
 
-const TIERS=['10% Tithe','Shelter (Wall 1)','Food (Wall 2)','Utilities (Wall 3)','Transportation (Wall 4)','Healthcare Insurances','Debt Minimums'];
+const TIERS=['10% Tithe','Shelter (Wall 1)','Food (Wall 2)','Utilities (Wall 3)','Transportation (Wall 4)','Insurance (Health & Life)','Debt Minimums','Discretionary (Not a Wall)'];
 const ACTIONS=['Keep (Essential)','Audit (Negotiate)','Prune (Cancel)'];
 function renderOverhead(){
   const tb=document.querySelector('#overheadTable tbody');
@@ -1015,7 +1033,7 @@ function renderEmergency(){
   const noOverhead=c.overhead<=0;
   document.getElementById('emergencyBox').innerHTML=`
     <div class="fldgrid" style="max-width:520px;margin-bottom:4px">
-      <label class="fld"><span>Months of overhead to hold</span><input type="number" min="1" step="1" value="${ef.monthsTarget}" onchange="setEmMonths(this.value)"></label>
+      <label class="fld"><span style="white-space:nowrap" title="Months of overhead to hold">Months to hold</span><input type="number" min="1" step="1" value="${ef.monthsTarget}" onchange="setEmMonths(this.value)"></label>
       <label class="fld"><span>Currently saved</span><input type="number" min="0" step="1" value="${ef.saved}" onchange="setEmSaved(this.value)"></label>
       <label class="fld"><span>Target (auto)</span><div class="cell-output">${noOverhead?'—':money0(target)}</div></label>
     </div>
@@ -1023,6 +1041,20 @@ function renderEmergency(){
       ?`<div class="card-note" style="margin-top:10px">Add your Fixed Overhead expenses on the <strong>Treasury</strong> tab first — the target here is calculated automatically from that total (months to hold × overhead), so it has nothing to calculate until there's overhead entered.</div>`
       :`${progressBar(ef.saved,target,'#8f3a2f')}
     <div class="goalmeta"><span><strong>${money0(ef.saved)}</strong> of ${money0(target)}</span><span>${covered.toFixed(1)} months of expenses covered</span></div>`}`;
+  renderEFPriority();
+}
+function renderEFPriority(){
+  const el=document.getElementById('efPriority');
+  if(!el)return;
+  const c=calc();const ef=state.goals.emergency;
+  const target=c.overhead*(+ef.monthsTarget||0);
+  if(target<=0){el.innerHTML='';return;}
+  const pct=Math.min(100,(+ef.saved||0)/target*100);
+  if(pct>=100){
+    el.innerHTML=`<div class="priority-note done">✅ <strong>Emergency Fund fully funded</strong> — ${money0(ef.saved)} of ${money0(target)}. With that cushion in place, this is the right time to prioritize the Sinking Funds and Savings Goals below.</div>`;
+  }else{
+    el.innerHTML=`<div class="priority-note">🎯 <strong>Fund your Emergency Fund first.</strong> You're at ${pct.toFixed(0)}% — ${money0(ef.saved)} of ${money0(target)}. Provision House recommends getting this fully funded before directing money into the Sinking Funds or Savings Goals below, so a surprise expense never has to come out of debt or derail everything else you're working toward.</div>`;
+  }
 }
 function setEmMonths(v){state.goals.emergency.monthsTarget=parseFloat(v)||0;save();renderEmergency();renderDashboard();}
 function setEmSaved(v){state.goals.emergency.saved=parseFloat(v)||0;save();renderEmergency();renderDashboard();}
