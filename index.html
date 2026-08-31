@@ -83,6 +83,11 @@
   .ledger .lgrp-h{display:flex;justify-content:space-between;gap:16px;align-items:baseline;font-weight:700;color:var(--green);font-size:1.05rem;padding:2px 0 4px}
   .ledger .lgrp-h b{white-space:nowrap;font-variant-numeric:tabular-nums}
   .ledger .freebar{margin-top:16px;padding-top:12px;border-top:2px solid var(--gold);display:flex;justify-content:space-between;gap:16px;font-weight:700;font-size:1.1rem;color:var(--green)}
+  .ledger .wf-nums{display:flex;gap:16px;align-items:baseline;justify-content:flex-end;flex:0 0 auto}
+  .ledger .wf-nums b{white-space:nowrap;min-width:74px;text-align:right}
+  .ledger .runbal{font-variant-numeric:tabular-nums;font-size:.8rem;color:var(--muted);min-width:96px;text-align:right}
+  .ledger .runbal.neg{color:var(--danger);font-weight:700}
+  .ledger .lrow.shortrow{background:var(--danger-bg);border-radius:8px;box-shadow:0 0 0 1px #e3b8ae}
   .gold-rule{height:2px;background:linear-gradient(90deg,var(--gold),transparent);border:none;margin:2px 0 18px}
   .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:18px;margin-bottom:8px}
   .stat{background:#fff;border-radius:var(--radius);padding:22px;border:1px solid var(--cream-dk);box-shadow:var(--shadow);position:relative;overflow:hidden}
@@ -295,6 +300,7 @@
       <div class="kicker">The Provisioned Household</div>
       <h1>CFO Command Center</h1>
       <div class="tag">Quiet Stewardship &nbsp;·&nbsp; Systems Integrity &nbsp;·&nbsp; Sovereign Rest</div>
+      <div style="margin-top:7px;font-size:.6rem;letter-spacing:2.5px;color:var(--gold-lt);font-weight:600">VERSION 3.2 · AUG 31, 2026</div>
     </div>
   </div>
 </header>
@@ -519,7 +525,7 @@
     <div class="card">
       <div class="card-title">🪣 Sinking Funds <span class="badge">Irregular costs</span></div>
       <hr class="gold-rule">
-      <div class="card-note">The expenses that break most budgets — insurance, holidays, annual fees. Set a target and a due date; the monthly set-aside is calculated for you.</div>
+      <div class="card-note">The expenses that break most budgets — insurance premiums, holidays, annual fees. Set a target and a due date; the set-aside is calculated for you. <strong>These come after debt</strong> in your plan. A <em>surprise</em> breakdown — a furnace, an A/C, a dead appliance — is not a sinking fund; that's exactly what your Emergency Fund is for. Sinking funds are only for costs you already know are coming.</div>
       <div id="sinkingList"></div>
       <div class="goalmeta" id="sinkingTotal" style="padding:0 2px"></div>
       <div class="card-actions"><button class="btn btn-ghost btn-sm" onclick="addSinking()">＋ Add a sinking fund</button></div>
@@ -535,7 +541,7 @@
           </select>
         </label>
         <label class="fld"><span>Extra monthly payment</span>
-          <input type="number" id="debtExtra" min="0" step="10" onchange="setDebtExtra(this.value)">
+          <input type="number" id="debtExtra" min="0" step="1" onchange="setDebtExtra(this.value)">
         </label>
       </div>
       <div id="equityBudget" style="margin:0 0 16px"></div>
@@ -743,7 +749,7 @@
   <span class="brand">The Provisioned Household</span>
   Your data is saved privately in this browser on your own device — nothing is uploaded anywhere. Back up regularly so a cleared browser never costs you your work.
   <div class="disc">This tool is provided for personal organization and educational purposes only. It is not financial, investment, tax, or legal advice. Figures are estimates based on the information you enter. Consult a qualified professional before making financial decisions.</div>
-  <div style="margin-top:10px;font-size:.66rem;letter-spacing:1px;opacity:.6">VERSION 3.1 · updated Aug 31, 2026</div>
+  <div style="margin-top:10px;font-size:.66rem;letter-spacing:1px;opacity:.6">VERSION 3.2 · updated Aug 31, 2026</div>
 </footer>
 <div class="save-flash" id="flash">Saved ✓</div>
 <div class="overlay" id="welcome">
@@ -1227,23 +1233,34 @@ function renderAllocLedger(){
   const left=c.margin-ef-sinking-savings-debtExtra;
   const pos=left>=-0.005;
   const toggle=ledgerToggle();
-  const R=c.reserves.monthly,E=c.equity.monthly,L=c.lifestyle.monthly;
-  const resLeft=R-ef-sinking-savings;
-  const eqLeft=E-debtExtra;
-  const freeTotal=Math.max(0,resLeft)+Math.max(0,eqLeft)+L;
-  const grp=(title,note,sweep,rows,leftLabel,leftVal)=>`
-    <div class="lgrp">
-      <div class="lgrp-h"><span>${title} <span style="font-weight:400;color:var(--muted);font-size:.78rem">${note}</span></span><b>${m(sweep)}</b></div>
-      ${rows.map(([l,v])=>`<div class="lrow"><span class="lbl">${l}</span><b>–${m(v)}</b></div>`).join('')}
-      <div class="lrow tot ${leftVal>=-0.005?'pos':'neg'}"><span class="lbl">${leftLabel}</span><b>${m(Math.abs(leftVal))}</b></div>
+  // Priority waterfall on your whole margin, funded top to bottom. Wherever the
+  // running balance first goes negative is exactly the bucket you're short on.
+  const steps=[
+    {icon:'🛡️',name:'Emergency Fund',amt:ef},
+    {icon:'💳',name:'Extra debt payment',amt:debtExtra},
+    {icon:'🪣',name:'Sinking funds',amt:sinking},
+    {icon:'🎯',name:'Savings goals',amt:savings}
+  ];
+  const mSigned=x=>(x<-0.005?'–':'')+money0(Math.abs(x)*F)+suf;
+  let bal=c.margin,firstShort=-1;
+  const rows=steps.map((s,idx)=>{bal-=s.amt;const after=bal;if(after<-0.005&&firstShort<0)firstShort=idx;return {...s,idx,after};});
+  const final=bal,over=final<-0.005;
+  const rowsHtml=rows.map(s=>{
+    const rc=s.after>=-0.005?'':'neg';
+    return `<div class="lrow${s.idx===firstShort?' shortrow':''}">
+      <span class="lbl">${s.icon} <strong>${s.idx+1}.</strong> ${s.name}</span>
+      <span class="wf-nums"><b>–${m(s.amt)}</b><span class="runbal ${rc}">${mSigned(s.after)} left</span></span>
     </div>`;
+  }).join('');
   el.innerHTML=`<div class="ledger">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:2px"><h4 style="margin:0">💵 Your money, ${per}</h4>${toggle}</div>
-    <div class="sub">Each payday you sweep into three buckets (see the Sweep Log on Treasury). Here's how much each bucket gets <strong>${per}</strong> and what it funds — change a goal or payment and these update live.</div>
-    ${grp('🔴 Reserves','savings bucket',R,[['🛡️ Emergency Fund',ef],['🪣 Sinking funds',sinking],['🎯 Savings goals',savings]],resLeft>=-0.005?'= Still free in Reserves':'⚠ Over your Reserves by',resLeft)}
-    ${grp('🔵 Equity','debt & wealth bucket',E,[['💳 Extra debt payment',debtExtra]],eqLeft>=-0.005?'= Still free in Equity':'⚠ Over your Equity by',eqLeft)}
-    <div class="lgrp"><div class="lgrp-h"><span>🟡 Lifestyle <span style="font-weight:400;color:var(--muted);font-size:.78rem">everyday spending</span></span><b>${m(L)}</b></div><div class="sub" style="margin:5px 0 0">Yours to spend on everyday life — no assigning needed.</div></div>
-    <div class="freebar"><span>Free to spend / not yet assigned</span><span>${m(freeTotal)}</span></div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:2px"><h4 style="margin:0">💵 Your money, in priority order (${per})</h4>${toggle}</div>
+    <div class="sub">Fund these <strong>top to bottom</strong> — each step only after the one above it is covered. Your minimum debt payments are already paid inside your Four Walls; this is what's left after bills. The <em>“left”</em> column is what remains after each step, so the moment it turns red is exactly where you run short.</div>
+    <div class="lrow start"><span class="lbl">Leftover after your bills (your margin)</span><b>${m(c.margin)}</b></div>
+    ${rowsHtml}
+    <div class="freebar" style="color:${over?'var(--danger)':'var(--green)'}"><span>${over?`⚠ Over-assigned — you run short at step ${firstShort+1}, ${steps[firstShort].name}`:'= Left to spend or invest'}</span><span>${m(Math.abs(final))}</span></div>
+    <div class="sub" style="margin:9px 0 0">${over
+      ?`You've planned more than your margin covers. Because it's in priority order, everything above step ${firstShort+1} is safe — fix it by trimming <strong>${steps[firstShort].name}</strong> or below (push a due date out, lower a target, or reduce the extra debt payment). Never plan a step you don't have the money for.`
+      :`Every step above has its money and this much is still free — nothing is planned that your margin can't cover.`}</div>
   </div>`;
 }
 function renderSweepTargets(){
