@@ -474,6 +474,7 @@
       <div id="emergencyBox"></div>
     </div>
     <div id="efPriority"></div>
+    <div id="reservesBudget"></div>
     <div class="card">
       <div class="card-title">🎯 Savings Goals</div>
       <hr class="gold-rule">
@@ -502,6 +503,7 @@
           <input type="number" id="debtExtra" min="0" step="10" onchange="setDebtExtra(this.value)">
         </label>
       </div>
+      <div id="equityBudget" style="margin:0 0 16px"></div>
       <div class="tbl-scroll">
         <table id="debtTable">
           <thead><tr><th style="min-width:150px">Debt</th><th style="width:130px">Balance</th><th style="width:110px">APR %</th><th style="width:130px">Min Payment</th><th style="width:120px">Paid Off</th><th style="width:44px"></th></tr></thead>
@@ -1073,6 +1075,7 @@ function renderEmergency(){
       :`${progressBar(ef.saved,target,'#8f3a2f')}
     <div class="goalmeta"><span><strong>${money0(ef.saved)}</strong> of ${money0(target)}</span><span>${covered.toFixed(1)} months of expenses covered</span></div>`}`;
   renderEFPriority();
+  renderGoalsBudgets();
 }
 function renderEFPriority(){
   const el=document.getElementById('efPriority');
@@ -1087,12 +1090,48 @@ function renderEFPriority(){
     el.innerHTML=`<div class="priority-note">🎯 <strong>Fund your Emergency Fund first.</strong> You're at ${pct.toFixed(0)}% — ${money0(ef.saved)} of ${money0(target)}. Provision House recommends getting this fully funded before directing money into the Sinking Funds or Savings Goals below, so a surprise expense never has to come out of debt or derail everything else you're working toward.</div>`;
   }
 }
+/* ---- Stream budget checks: does what you're committing on this tab fit the
+   allocation split you set on Treasury? "Save for emergencies" (Reserves)
+   funds the Emergency Fund + Sinking Funds + dated Savings Goals; "Pay off
+   debt & build wealth" (Equity) funds your extra debt payment. ---- */
+function streamBudgets(){
+  const c=calc();
+  const sinkingMonthly=(state.goals.sinking||[]).reduce((s,g)=>{const m=monthsUntil(g.due);return s+(m?Math.max(0,((+g.target||0)-(+g.saved||0)))/m:0);},0);
+  const savingsMonthly=(state.goals.savings||[]).reduce((s,g)=>{if(!g.date)return s;const m=monthsUntil(g.date);return s+(m?Math.max(0,((+g.target||0)-(+g.saved||0)))/m:0);},0);
+  return {reservesBudget:c.reserves.monthly,savingsCommitted:sinkingMonthly+savingsMonthly,equityBudget:c.equity.monthly,debtExtra:+state.debtExtra||0};
+}
+function renderGoalsBudgets(){
+  const b=streamBudgets();
+  const rEl=document.getElementById('reservesBudget');
+  if(rEl){
+    const budget=b.reservesBudget,committed=b.savingsCommitted,remaining=budget-committed;
+    if(budget<=0&&committed<=0){rEl.innerHTML='';}
+    else if(remaining>=-0.005){
+      rEl.innerHTML=`<div class="priority-note done">💰 <strong>Savings budget — you're on track.</strong> Your “Save for emergencies” stream is <strong>${money0(budget)}/mo</strong>. Your sinking funds and dated savings goals are drawing <strong>${money0(committed)}/mo</strong>, which leaves <strong>${money0(remaining)}/mo</strong> to pour into your Emergency Fund. Everything below fits inside this budget. ✓</div>`;
+    }else{
+      rEl.innerHTML=`<div class="priority-note" style="border-left-color:var(--danger)">⚠ <strong>Over your savings budget by ${money0(-remaining)}/mo.</strong> Your “Save for emergencies” stream is only ${money0(budget)}/mo, but the sinking funds and dated goals below need ${money0(committed)}/mo. To fix it: raise the Reserves % on the Treasury tab, push out a due date, or lower a target.</div>`;
+    }
+  }
+  const eEl=document.getElementById('equityBudget');
+  if(eEl){
+    const budget=b.equityBudget,extra=b.debtExtra,remaining=budget-extra;
+    if(budget<=0&&extra<=0){eEl.innerHTML='';}
+    else if(remaining>=-0.005){
+      eEl.innerHTML=`<div class="priority-note done">💪 <strong>Debt &amp; wealth budget.</strong> Your “Pay off debt &amp; build wealth” stream is <strong>${money0(budget)}/mo</strong>; your extra payment is <strong>${money0(extra)}/mo</strong>${remaining>0.5?`, so <strong>${money0(remaining)}/mo</strong> is still unused — raise your extra payment to be debt-free sooner (or invest it once the debt's gone).`:` — you're putting the whole stream to work. ✓`}</div>`;
+    }else{
+      eEl.innerHTML=`<div class="priority-note" style="border-left-color:var(--danger)">⚠ <strong>Your extra payment (${money0(extra)}/mo) is more than your debt-payoff budget (${money0(budget)}/mo)</strong> by ${money0(-remaining)}/mo. That's fine if you can truly swing it — just know the difference is coming out of another stream. To match your plan, raise the “Pay off debt” % on Treasury or lower the extra payment.</div>`;
+    }
+  }
+}
 function setEmMonths(v){state.goals.emergency.monthsTarget=parseFloat(v)||0;save();renderEmergency();renderDashboard();}
 function setEmSaved(v){state.goals.emergency.saved=parseFloat(v)||0;save();renderEmergency();renderDashboard();}
 function renderSavings(){
   const el=document.getElementById('savingsList');
   el.innerHTML=state.goals.savings.map((g,i)=>{
-    const mNeed=g.date?Math.max(0,(g.target-g.saved))/monthsUntil(g.date):null;
+    const months=g.date?monthsUntil(g.date):null;
+    const remain=Math.max(0,(+g.target||0)-(+g.saved||0));
+    const mNeed=months?remain/months:null;
+    const pct=g.target>0?Math.round(g.saved/g.target*100):0;
     return `<div class="goalrow">
       <div class="gtop"><input class="gname" value="${esc(g.name)}" onchange="updGoal('savings',${i},'name',this.value)" placeholder="Goal name">
       <button class="icon-btn" onclick="delGoal('savings',${i})">✕</button></div>
@@ -1100,11 +1139,16 @@ function renderSavings(){
         <label class="fld"><span>Target</span><input type="number" min="0" value="${g.target}" onchange="updGoal('savings',${i},'target',this.value)"></label>
         <label class="fld"><span>Saved</span><input type="number" min="0" value="${g.saved}" onchange="updGoal('savings',${i},'saved',this.value)"></label>
         <label class="fld"><span>Target date (optional)</span><input type="date" value="${g.date||''}" onchange="updGoal('savings',${i},'date',this.value)"></label>
+        <label class="fld"><span>To save each month</span><div class="cell-output">${mNeed!=null?money0(mNeed):'—'}</div></label>
       </div>
       ${progressBar(g.saved,g.target,'#2f5fa0')}
-      <div class="goalmeta"><span><strong>${money0(g.saved)}</strong> of ${money0(g.target)} · ${g.target>0?Math.round(g.saved/g.target*100):0}%</span>${mNeed!=null?`<span>Set aside <strong>${money0(mNeed)}</strong>/mo to hit the date</span>`:''}</div>
+      <div class="goalmeta"><span><strong>${money0(g.saved)}</strong> of ${money0(g.target)} · ${pct}%</span><span>${money0(remain)} to go</span></div>
+      ${g.date
+        ? `<div class="goalmeta" style="margin-top:2px"><span>🎯 Save <strong>${money0(mNeed)}/mo</strong> to reach it by ${fmtMonthYear(parseISO(g.date))}</span><span>${months} month${months===1?'':'s'} away</span></div>`
+        : `<div class="goalmeta" style="margin-top:2px"><span style="color:var(--gold)">Add a target date above and this will show exactly how much to save each month.</span></div>`}
     </div>`;
   }).join('')||`<div class="empty">No savings goals yet — add one below.</div>`;
+  renderGoalsBudgets();
 }
 function addSavings(){state.goals.savings.push({name:'New goal',target:1000,saved:0,date:''});save();renderSavings();renderDashboard();}
 function renderSinking(){
@@ -1130,6 +1174,7 @@ function renderSinking(){
     </div>`;
   }).join('')||`<div class="empty">No sinking funds yet — add one below.</div>`;
   document.getElementById('sinkingTotal').innerHTML=state.goals.sinking.length?`<span></span><span>Total monthly set-asides: <strong>${money0(totalMonthly)}</strong></span>`:'';
+  renderGoalsBudgets();
 }
 function addSinking(){state.goals.sinking.push({name:'New sinking fund',target:600,saved:0,due:isoMonthsAhead(6)});save();renderSinking();renderDashboard();}
 function updGoal(list,i,f,v){
@@ -1185,6 +1230,7 @@ function renderDebt(){
     <div class="stat"><div class="lbl">Monthly Payment</div><div class="val">${money0(sim.budget||0)}</div><div class="hint">mins + extra</div></div>
     <div class="stat"><div class="lbl">Time to Freedom</div><div class="val">${sim.capped?'100y+':dur}</div><div class="hint">${sim.capped?'Increase payment':'at this plan'}</div></div>
     <div class="stat accent"><div class="lbl">Debt-Free Date</div><div class="val" style="font-size:1.9rem">${sim.capped?'—':fmtMonthYear(sim.date)}</div><div class="hint">Total interest: ${money0(sim.interest)}</div></div>`;
+  renderGoalsBudgets();
 }
 function setDebtStrategy(v){state.debtStrategy=v;save();renderDebt();renderDashboard();}
 function setDebtExtra(v){state.debtExtra=parseFloat(v)||0;save();renderDebt();renderDashboard();}
