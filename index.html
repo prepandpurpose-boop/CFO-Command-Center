@@ -957,10 +957,10 @@ function tierSelect(i,r,tiers){
   if(r.tier&&!opts.includes(r.tier))opts.unshift(r.tier);
   return `<select onchange="upd('overhead',${i},'tier',this.value)">${opts.map(t=>`<option ${t===r.tier?'selected':''}>${esc(t)}</option>`).join('')}</select>`;
 }
-function overheadRow(r,i,tiers){
+function overheadRow(r,i,tiers,placeholder){
   const pruned=r.action==='Prune (Cancel)';
   return `<tr style="${pruned?'opacity:.6':''}">
-    <td><input value="${esc(r.category)}" onchange="upd('overhead',${i},'category',this.value)" placeholder="e.g. Rent"></td>
+    <td><input value="${esc(r.category)}" onchange="upd('overhead',${i},'category',this.value)" placeholder="${esc(placeholder||'e.g. Rent')}"></td>
     <td><input type="number" step="0.01" value="${r.cost}" onchange="upd('overhead',${i},'cost',this.value)"></td>
     <td><input type="number" min="0" max="31" step="1" value="${r.due||0}" title="Day of month it's due (0 = no fixed date)" onchange="upd('overhead',${i},'due',this.value)"></td>
     <td>${tierSelect(i,r,tiers)}</td>
@@ -972,9 +972,9 @@ function renderOverhead(){
   const walls=[],exps=[];
   state.overhead.forEach((r,i)=>{(overheadKind(r)==='expense'?exps:walls).push({r,i});});
   const wtb=document.querySelector('#wallsTable tbody');
-  wtb.innerHTML=walls.map(({r,i})=>overheadRow(r,i,WALL_TIERS)).join('')||`<tr><td colspan="6" class="empty">No Four Walls yet — add one below.</td></tr>`;
+  wtb.innerHTML=walls.map(({r,i})=>overheadRow(r,i,WALL_TIERS,'e.g. Rent')).join('')||`<tr><td colspan="6" class="empty">No Four Walls yet — add one below.</td></tr>`;
   const etb=document.querySelector('#expenseTable tbody');
-  etb.innerHTML=exps.map(({r,i})=>overheadRow(r,i,EXPENSE_TIERS)).join('')||`<tr><td colspan="6" class="empty">No recurring expenses yet — add one below.</td></tr>`;
+  etb.innerHTML=exps.map(({r,i})=>overheadRow(r,i,EXPENSE_TIERS,'e.g. Phone, WiFi, streaming')).join('')||`<tr><td colspan="6" class="empty">No recurring expenses yet — add one below.</td></tr>`;
   const liveCost=arr=>arr.reduce((s,{r})=>s+(r.action==='Prune (Cancel)'?0:(+r.cost||0)),0);
   document.getElementById('wallsTotal').textContent=money(liveCost(walls));
   document.getElementById('expenseTotal').textContent=money(liveCost(exps));
