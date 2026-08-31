@@ -68,6 +68,16 @@
   .budget-calc>div{display:flex;justify-content:space-between;gap:16px;padding:4px 0;font-variant-numeric:tabular-nums;font-size:.9rem}
   .budget-calc>div.tot{border-top:1.5px solid rgba(0,0,0,.22);margin-top:3px;padding-top:7px;font-weight:700;font-size:.98rem}
   .budget-calc b{white-space:nowrap}
+  .ledger{background:#fff;border:1px solid var(--cream-dk);border-left:5px solid var(--gold);border-radius:12px;padding:18px 20px;margin:0 0 22px;box-shadow:var(--shadow)}
+  .ledger h4{font-family:'Cormorant Garamond',serif;font-size:1.4rem;color:var(--green);font-weight:600;margin-bottom:2px}
+  .ledger .sub{font-size:.82rem;color:var(--muted);margin-bottom:12px}
+  .ledger .lrow{display:flex;justify-content:space-between;gap:16px;padding:6px 0;font-variant-numeric:tabular-nums;border-bottom:1px dotted var(--cream-dk)}
+  .ledger .lrow .lbl{display:flex;align-items:center;gap:8px}
+  .ledger .lrow b{white-space:nowrap}
+  .ledger .lrow.start{font-weight:700;color:var(--green);font-size:1.04rem;border-bottom:2px solid var(--cream-dk)}
+  .ledger .lrow.tot{border-bottom:none;border-top:2px solid var(--gold);margin-top:4px;padding-top:11px;font-weight:700;font-size:1.16rem}
+  .ledger .lrow.tot.pos{color:var(--green)}
+  .ledger .lrow.tot.neg{color:var(--danger)}
   .gold-rule{height:2px;background:linear-gradient(90deg,var(--gold),transparent);border:none;margin:2px 0 18px}
   .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:18px;margin-bottom:8px}
   .stat{background:#fff;border-radius:var(--radius);padding:22px;border:1px solid var(--cream-dk);box-shadow:var(--shadow);position:relative;overflow:hidden}
@@ -486,6 +496,7 @@
       <div class="sub">Where your Reserves and Equity streams are actually headed — an emergency fund, sinking funds for irregular costs, named savings goals, and a payoff plan that gives you a real debt-free date.</div>
     </div>
     <div id="alertGoals"></div>
+    <div id="allocLedger"></div>
     <div class="card">
       <div class="card-title">⛑️ Emergency Fund</div>
       <hr class="gold-rule">
@@ -727,7 +738,7 @@
   <span class="brand">The Provisioned Household</span>
   Your data is saved privately in this browser on your own device — nothing is uploaded anywhere. Back up regularly so a cleared browser never costs you your work.
   <div class="disc">This tool is provided for personal organization and educational purposes only. It is not financial, investment, tax, or legal advice. Figures are estimates based on the information you enter. Consult a qualified professional before making financial decisions.</div>
-  <div style="margin-top:10px;font-size:.66rem;letter-spacing:1px;opacity:.6">VERSION 2.7 · updated Aug 31, 2026</div>
+  <div style="margin-top:10px;font-size:.66rem;letter-spacing:1px;opacity:.6">VERSION 2.8 · updated Aug 31, 2026</div>
 </footer>
 <div class="save-flash" id="flash">Saved ✓</div>
 <div class="overlay" id="welcome">
@@ -1175,8 +1186,34 @@ function renderAlerts(){
   }
   els.forEach(el=>{if(el)el.innerHTML=html;});
 }
+function renderAllocLedger(){
+  const el=document.getElementById('allocLedger');if(!el)return;
+  const c=calc();
+  if(c.income<=0||c.margin<-0.005){el.innerHTML='';return;} // nothing to assign yet, or a deficit (the red alert covers that)
+  const p=emergencyPlan();
+  const ef=p.full?0:p.efMonthly;
+  const sinking=(state.goals.sinking||[]).reduce((s,g)=>{const m=monthsUntil(g.due);return s+(m?Math.max(0,((+g.target||0)-(+g.saved||0)))/m:0);},0);
+  const savings=(state.goals.savings||[]).reduce((s,g)=>{if(!g.date)return s;const m=monthsUntil(g.date);return s+(m?Math.max(0,((+g.target||0)-(+g.saved||0)))/m:0);},0);
+  const debtExtra=+state.debtExtra||0;
+  const left=c.margin-ef-sinking-savings-debtExtra;
+  const pos=left>=-0.005;
+  el.innerHTML=`<div class="ledger">
+    <h4>💵 Where your leftover goes this month</h4>
+    <div class="sub">Start with what's left after your bills, then give every dollar a job. As you fund each thing below, the amount left to spend counts down.</div>
+    <div class="lrow start"><span class="lbl">Leftover after your bills (your margin)</span><b>${money0(c.margin)}</b></div>
+    <div class="lrow"><span class="lbl">🛡️ Emergency Fund</span><b>–${money0(ef)}</b></div>
+    <div class="lrow"><span class="lbl">🪣 Sinking funds</span><b>–${money0(sinking)}</b></div>
+    <div class="lrow"><span class="lbl">🎯 Savings goals (with a date)</span><b>–${money0(savings)}</b></div>
+    <div class="lrow"><span class="lbl">💳 Extra debt payment</span><b>–${money0(debtExtra)}</b></div>
+    <div class="lrow tot ${pos?'pos':'neg'}"><span class="lbl">${pos?'= Left to spend or invest':'= Over-assigned by'}</span><b>${money0(Math.abs(left))}</b></div>
+    <div class="sub" style="margin:9px 0 0">${pos
+      ?`This <strong>${money0(left)}/mo</strong> is free — everyday spending, fun, or extra toward any goal you like. When it reaches $0, every dollar has a job.`
+      :`You've given <strong>${money0(-left)}/mo</strong> more jobs than you have money for. Trim a category above, lower your extra debt payment, or free up room on the Treasury tab.`}</div>
+  </div>`;
+}
 function renderGoalsBudgets(){
   renderAlerts();
+  renderAllocLedger();
   const b=streamBudgets();
   const c=calc();
   const deficit=c.income>0&&c.margin<-0.005;
