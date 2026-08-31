@@ -64,6 +64,10 @@
   .alert.critical .head{color:var(--danger);font-size:1.14rem}
   @keyframes alertpulse{0%,100%{box-shadow:0 10px 30px rgba(143,58,47,.22)}50%{box-shadow:0 10px 34px rgba(143,58,47,.42)}}
   .alert.critical{animation:alertpulse 2.2s ease-in-out infinite}
+  .budget-calc{margin-top:9px;max-width:430px}
+  .budget-calc>div{display:flex;justify-content:space-between;gap:16px;padding:4px 0;font-variant-numeric:tabular-nums;font-size:.9rem}
+  .budget-calc>div.tot{border-top:1.5px solid rgba(0,0,0,.22);margin-top:3px;padding-top:7px;font-weight:700;font-size:.98rem}
+  .budget-calc b{white-space:nowrap}
   .gold-rule{height:2px;background:linear-gradient(90deg,var(--gold),transparent);border:none;margin:2px 0 18px}
   .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:18px;margin-bottom:8px}
   .stat{background:#fff;border-radius:var(--radius);padding:22px;border:1px solid var(--cream-dk);box-shadow:var(--shadow);position:relative;overflow:hidden}
@@ -722,7 +726,7 @@
   <span class="brand">The Provisioned Household</span>
   Your data is saved privately in this browser on your own device — nothing is uploaded anywhere. Back up regularly so a cleared browser never costs you your work.
   <div class="disc">This tool is provided for personal organization and educational purposes only. It is not financial, investment, tax, or legal advice. Figures are estimates based on the information you enter. Consult a qualified professional before making financial decisions.</div>
-  <div style="margin-top:10px;font-size:.66rem;letter-spacing:1px;opacity:.6">VERSION 2.2 · updated Aug 31, 2026</div>
+  <div style="margin-top:10px;font-size:.66rem;letter-spacing:1px;opacity:.6">VERSION 2.5 · updated Aug 31, 2026</div>
 </footer>
 <div class="save-flash" id="flash">Saved ✓</div>
 <div class="overlay" id="welcome">
@@ -1079,19 +1083,46 @@ function monthsUntil(dateStr){
 function renderEmergency(){
   const c=calc();const ef=state.goals.emergency;
   const target=c.overhead*(+ef.monthsTarget||0);
-  const covered=c.overhead>0?ef.saved/c.overhead:0;
+  const saved=+ef.saved||0;
+  const remaining=Math.max(0,target-saved);
+  const monthly=c.reserves.monthly; // the Emergency Fund is first in line for the Reserves stream
+  const covered=c.overhead>0?saved/c.overhead:0;
   const noOverhead=c.overhead<=0;
+  let projHtml='';
+  if(!noOverhead){
+    if(remaining<=0){
+      projHtml=`<div class="priority-note done" style="margin-top:14px">✅ <strong>Fully funded.</strong> Your Emergency Fund has reached its ${money0(target)} target — ${(+ef.monthsTarget||0)} months of expenses. From here, your ${money0(monthly)}/mo Reserves flows on to the sinking funds and goals below.</div>`;
+    }else if(monthly<=0){
+      projHtml=`<div class="priority-note" style="margin-top:14px">Right now $0/mo is set to go here. Set your “Save for emergencies” % on the <strong>Treasury</strong> tab above 0 so money actually flows into this fund each month.</div>`;
+    }else{
+      const monthsToFund=Math.ceil(remaining/monthly);
+      const projDate=fmtMonthYear(offsetMonths(monthsToFund));
+      let statusLine='';
+      if(ef.wantBy){
+        const mWant=Math.max(1,monthsUntil(ef.wantBy));
+        const reqMonthly=remaining/mWant;
+        if(reqMonthly<=monthly+0.5){
+          statusLine=`<div style="margin-top:7px;color:var(--green);font-weight:600">✓ On pace — at ${money0(monthly)}/mo you'll actually reach it by ${projDate}, on or before your ${fmtMonthYear(parseISO(ef.wantBy))} goal.</div>`;
+        }else{
+          statusLine=`<div style="margin-top:7px;color:var(--danger);font-weight:600">To hit ${fmtMonthYear(parseISO(ef.wantBy))} you'd need about ${money0(reqMonthly)}/mo, but only ${money0(monthly)}/mo is going in. Raise your “Save for emergencies” % on Treasury — or plan on ${projDate} instead.</div>`;
+        }
+      }
+      projHtml=`<div class="priority-note" style="margin-top:14px">🎯 At <strong>${money0(monthly)}/mo</strong> — your whole Reserves stream, which fills this fund first — you'll be fully funded by <strong>${projDate}</strong>, about ${monthsToFund} month${monthsToFund===1?'':'s'} from now.${statusLine}</div>`;
+    }
+  }
   document.getElementById('emergencyBox').innerHTML=`
-    <div class="fldgrid" style="max-width:520px;margin-bottom:4px">
-      <label class="fld"><span style="white-space:nowrap" title="Months of overhead to hold">Months to hold</span><input type="number" min="1" step="1" value="${ef.monthsTarget}" onchange="setEmMonths(this.value)"></label>
-      <label class="fld"><span>Currently saved</span><input type="number" min="0" step="1" value="${ef.saved}" onchange="setEmSaved(this.value)"></label>
+    <div class="fldgrid" style="max-width:720px;margin-bottom:4px">
+      <label class="fld"><span style="white-space:nowrap" title="How many months of your overhead to hold in cash">Months to hold</span><input type="number" min="1" step="1" value="${ef.monthsTarget}" onchange="setEmMonths(this.value)"></label>
+      <label class="fld"><span>Currently saved</span><input type="number" min="0" step="1" value="${saved}" onchange="setEmSaved(this.value)"></label>
       <label class="fld"><span>Target (auto)</span><div class="cell-output">${noOverhead?'—':money0(target)}</div></label>
+      <label class="fld"><span title="Comes straight from your Reserves % on Treasury">Going in each month</span><div class="cell-output">${noOverhead?'—':money0(monthly)}</div></label>
+      <label class="fld"><span>Want it funded by (optional)</span><input type="date" value="${ef.wantBy||''}" onchange="setEmWantBy(this.value)"></label>
     </div>
     ${noOverhead
-      ?`<div class="card-note" style="margin-top:10px">Add your Fixed Overhead expenses on the <strong>Treasury</strong> tab first — the target here is calculated automatically from that total (months to hold × overhead), so it has nothing to calculate until there's overhead entered.</div>`
-      :`${progressBar(ef.saved,target,'#8f3a2f')}
-    <div class="goalmeta"><span><strong>${money0(ef.saved)}</strong> of ${money0(target)}</span><span>${covered.toFixed(1)} months of expenses covered</span></div>`}`;
-  renderEFPriority();
+      ?`<div class="card-note" style="margin-top:10px">Add your Four Walls and expenses on the <strong>Treasury</strong> tab first — the target here is months to hold × your overhead, so it needs those numbers before it can calculate.</div>`
+      :`${progressBar(saved,target,'#8f3a2f')}
+    <div class="goalmeta"><span><strong>${money0(saved)}</strong> of ${money0(target)}</span><span>${covered.toFixed(1)} months of expenses covered</span></div>`}
+    ${projHtml}`;
   renderGoalsBudgets();
 }
 function renderEFPriority(){
@@ -1132,14 +1163,34 @@ function renderGoalsBudgets(){
   const b=streamBudgets();
   const c=calc();
   const deficit=c.income>0&&c.margin<-0.005;
+  const calcRows=rows=>`<div class="budget-calc">${rows.map(r=>`<div class="${r.tot?'tot':''}"><span>${r.l}</span><b>${r.v}</b></div>`).join('')}</div>`;
   const rEl=document.getElementById('reservesBudget');
   if(rEl){
-    const budget=b.reservesBudget,committed=b.savingsCommitted,remaining=budget-committed;
-    if(deficit||(budget<=0&&committed<=0)){rEl.innerHTML='';}
-    else if(remaining>=-0.005){
-      rEl.innerHTML=`<div class="alert good"><div class="ico">💰</div><div class="body"><span class="head">Savings budget — you're on track.</span>Your “Save for emergencies” stream is <strong>${money0(budget)}/mo</strong>. Your sinking funds and dated savings goals draw <strong>${money0(committed)}/mo</strong>, leaving <strong>${money0(remaining)}/mo</strong> to pour into your Emergency Fund. Everything below fits inside this budget. ✓</div></div>`;
-    }else{
-      rEl.innerHTML=`<div class="alert bad"><div class="ico">⚠️</div><div class="body"><span class="head">Over your savings budget by ${money0(-remaining)}/mo.</span>Your “Save for emergencies” stream is only <strong>${money0(budget)}/mo</strong>, but the sinking funds and dated goals below need <strong>${money0(committed)}/mo</strong>. Three ways to fix it: raise the <strong>Reserves %</strong> on the Treasury tab, push out a <strong>due date</strong>, or lower a <strong>target</strong>.</div></div>`;
+    const budget=b.reservesBudget,committed=b.savingsCommitted;
+    const efTarget=c.overhead*(+state.goals.emergency.monthsTarget||0);
+    const efSaved=+state.goals.emergency.saved||0;
+    const efFull=efTarget>0&&efSaved>=efTarget-0.005;
+    if(deficit||(budget<=0&&committed<=0&&efTarget<=0)){rEl.innerHTML='';}
+    else if(efTarget>0&&!efFull){
+      // Emergency Fund is first in line — it takes the whole Reserves stream until it's full.
+      const rem=efTarget-efSaved;
+      const proj=budget>0?fmtMonthYear(offsetMonths(Math.ceil(rem/budget))):'—';
+      rEl.innerHTML=`<div class="alert good"><div class="ico">🛡️</div><div class="body"><span class="head">Your Emergency Fund comes first</span>${calcRows([
+        {l:'Money you save each month (Reserves)',v:money0(budget)},
+        {l:'→ All of it fills your Emergency Fund first',v:'–'+money0(budget)},
+        {l:'= Left this month for anything else',v:'$0',tot:true}
+      ])}<div style="margin-top:9px">Until your Emergency Fund is full (about <strong>${proj}</strong>), your whole <strong>${money0(budget)}/mo</strong> goes there first. Once it's funded, this money frees up — the strongest next move is to throw it at <strong>debt</strong>, though funding a goal below is your call.${committed>0?` <span style="color:var(--muted)">(Your sinking funds &amp; goals would need ${money0(committed)}/mo if you decide to fund them.)</span>`:''}</div></div></div>`;
+    }
+    else if(efTarget<=0){
+      rEl.innerHTML=`<div class="alert good"><div class="ico">🛡️</div><div class="body"><span class="head">Set your Emergency Fund target first</span>Choose how many months to hold above — your Reserves money fills the Emergency Fund before anything else. Once it's fully funded, that money frees up to send toward debt or goals.</div></div>`;
+    }
+    else {
+      // Emergency Fund is FULL — that money is now free. Suggest debt; sinking/goals are the user's
+      // choice, offered as a note, never auto-assigned or restricted.
+      const overNote=committed>budget+0.005
+        ? `<div style="margin-top:9px;color:var(--muted);font-size:.85rem">Note: the sinking funds &amp; goals you've set up add up to <strong>${money0(committed)}/mo</strong> — more than this freed <strong>${money0(budget)}/mo</strong> — so you can't fund all of them from here. Pick the ones that matter, or put this toward debt instead.</div>`
+        : (committed>0?`<div style="margin-top:9px;color:var(--muted);font-size:.85rem">You also have <strong>${money0(committed)}/mo</strong> of sinking funds &amp; goals set up — this freed money can cover those instead if you'd rather. Your choice.</div>`:'');
+      rEl.innerHTML=`<div class="alert good"><div class="ico">🎉</div><div class="body"><span class="head">Emergency Fund funded — this money is now free</span>Your Emergency Fund has hit its target, so the <strong>${money0(budget)}/mo</strong> that was filling it isn't needed there anymore. The most powerful next move is to send it to <strong>debt</strong> — add it to your <em>Extra monthly payment</em> on the Debt Payoff Planner below, and you'll be debt-free sooner. Once you're debt-free too, point it at investing or a specific goal. This is a suggestion, not a rule — it's your money to direct.${overNote}</div></div>`;
     }
   }
   const eEl=document.getElementById('equityBudget');
@@ -1147,14 +1198,23 @@ function renderGoalsBudgets(){
     const budget=b.equityBudget,extra=b.debtExtra,remaining=budget-extra;
     if(deficit||(budget<=0&&extra<=0)){eEl.innerHTML='';}
     else if(remaining>=-0.005){
-      eEl.innerHTML=`<div class="alert good"><div class="ico">💪</div><div class="body"><span class="head">Debt &amp; wealth budget.</span>Your “Pay off debt &amp; build wealth” stream is <strong>${money0(budget)}/mo</strong>; your extra payment is <strong>${money0(extra)}/mo</strong>${remaining>0.5?`, so <strong>${money0(remaining)}/mo</strong> is still unused — raise your extra payment to be debt-free sooner (or invest it once the debt's gone).`:` — you're putting the whole stream to work. ✓`}</div></div>`;
+      eEl.innerHTML=`<div class="alert good"><div class="ico">💪</div><div class="body"><span class="head">Your debt-payoff money adds up ✓</span>${calcRows([
+        {l:'Money you plan to put toward debt each month',v:money0(budget)},
+        {l:'– Your extra debt payment',v:'–'+money0(extra)},
+        {l:'= Not yet assigned',v:money0(remaining),tot:true}
+      ])}<div style="margin-top:9px">${remaining>0.5?`You've planned <strong>${money0(budget)}/mo</strong> for debt, but your extra payment is only <strong>${money0(extra)}/mo</strong> — <strong>${money0(remaining)}/mo</strong> is going unused. Raise your extra payment above to be debt-free sooner.`:`You're putting your whole <strong>${money0(budget)}/mo</strong> debt budget to work. ✓`}</div></div></div>`;
     }else{
-      eEl.innerHTML=`<div class="alert bad"><div class="ico">⚠️</div><div class="body"><span class="head">Extra payment is over your debt budget by ${money0(-remaining)}/mo.</span>Your extra payment (<strong>${money0(extra)}/mo</strong>) is more than your “Pay off debt” stream (<strong>${money0(budget)}/mo</strong>). That's fine if you can truly swing it — just know the difference is coming out of another stream. To match your plan, raise the <strong>“Pay off debt” %</strong> on Treasury or lower the extra payment.</div></div>`;
+      eEl.innerHTML=`<div class="alert bad"><div class="ico">⚠️</div><div class="body"><span class="head">Your extra payment is bigger than your debt budget</span>${calcRows([
+        {l:'Money you plan to put toward debt each month',v:money0(budget)},
+        {l:'Your extra debt payment',v:money0(extra)},
+        {l:'Over each month by',v:money0(extra-budget),tot:true}
+      ])}<div style="margin-top:9px">That's fine if you can truly afford it — just know the extra <strong>${money0(extra-budget)}/mo</strong> is coming out of another category. To match your plan, lower the extra payment or raise the <strong>“Pay off debt” %</strong> on the Treasury tab.</div></div></div>`;
     }
   }
 }
 function setEmMonths(v){state.goals.emergency.monthsTarget=parseFloat(v)||0;save();renderEmergency();renderDashboard();}
 function setEmSaved(v){state.goals.emergency.saved=parseFloat(v)||0;save();renderEmergency();renderDashboard();}
+function setEmWantBy(v){state.goals.emergency.wantBy=v||'';save();renderEmergency();renderDashboard();}
 function renderSavings(){
   const el=document.getElementById('savingsList');
   el.innerHTML=state.goals.savings.map((g,i)=>{
