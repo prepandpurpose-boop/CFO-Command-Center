@@ -1206,7 +1206,11 @@ function renderSinking(){
 }
 function addSinking(){state.goals.sinking.push({name:'New sinking fund',target:600,saved:0,due:isoMonthsAhead(6)});save();renderSinking();renderDashboard();}
 function updGoal(list,i,f,v){
-  if(NUM_FIELDS.has(f))v=parseFloat(v)||0;
+  // Only the money fields are numeric here. 'due' on a sinking fund is a DATE
+  // string (unlike the overhead table's numeric Due Day), so it must NOT be
+  // run through parseFloat — doing so turned "2027-01-24" into 2027 and the
+  // date silently refused to update.
+  if(f==='target'||f==='saved')v=parseFloat(v)||0;
   state.goals[list][i][f]=v;save();
   if(list==='savings')renderSavings();else renderSinking();
   renderDashboard();
