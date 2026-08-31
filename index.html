@@ -73,6 +73,8 @@
   .alloc h4{font-family:'Jost',sans-serif;font-size:.72rem;text-transform:uppercase;letter-spacing:1.4px;color:var(--muted);font-weight:600;display:flex;align-items:center}
   .alloc .amt{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:700;color:var(--green);margin-top:8px}
   .alloc .wk{font-size:.82rem;color:var(--muted);margin-top:2px}
+  .alloc .sub2{font-size:.62rem;letter-spacing:1px;text-transform:uppercase;color:var(--gold);font-weight:600;margin-top:3px}
+  .alloc .desc{font-size:.8rem;color:var(--muted);margin-top:10px;line-height:1.45}
   .alloc .pctwrap{display:flex;align-items:center;gap:8px;margin-top:12px}
   .alloc input[type=number]{width:64px}
   .bar{height:7px;border-radius:6px;background:var(--cream-dk);margin-top:14px;overflow:hidden}
@@ -427,7 +429,12 @@
         <div class="stat accent"><div class="lbl">= Sovereign Margin</div><div class="val" id="engMargin">$0</div></div>
       </div>
       <div id="engSolvency" class="solvency ok"></div>
-      <div class="card-note" style="margin-top:18px"><strong>Set your allocation split</strong> — the three streams must total 100%.</div>
+      <div class="card-note" style="margin-top:18px"><strong>Now split your leftover money into three jobs.</strong> After your bills are paid, whatever's left over (your Sovereign Margin above) gets divided three ways, so every dollar has a purpose instead of just disappearing. Type a percentage into each blue box — they only need to add up to 100%. <strong>Never budgeted before? Tap one of these to fill it in for you, then adjust anytime:</strong></div>
+      <div class="card-actions" style="margin:0 0 18px">
+        <button class="btn btn-ghost btn-sm" onclick="setPreset('starter')" title="Most of your leftover builds a safety net first">🌱 New to this — build a safety net</button>
+        <button class="btn btn-ghost btn-sm" onclick="setPreset('debt')" title="Most of your leftover attacks debt">💳 Focused on paying off debt</button>
+        <button class="btn btn-ghost btn-sm" onclick="setPreset('wealth')" title="Debt is handled — grow savings & wealth">📈 Debt-free — grow wealth</button>
+      </div>
       <div class="alloc-grid" id="treasuryAlloc"></div>
     </div>
     <div class="card">
@@ -913,23 +920,31 @@ function calc(){
   return{income,reclaimed,overhead,margin,reserves:mk(a.reserves),equity:mk(a.equity),lifestyle:mk(a.lifestyle)};
 }
 const ALLOC_META={
-  reserves:{name:'Emergency Reserves',color:'#8f3a2f'},
-  equity:{name:'Equity & Wealth',color:'#2f5fa0'},
-  lifestyle:{name:'Lifestyle Margin',color:'#C59B27'}
+  reserves:{name:'Emergency Reserves',plain:'Save for emergencies',color:'#8f3a2f',desc:'Your safety net — money set aside for surprise costs like a car repair, a medical bill, or a job loss. This is what fills your Emergency Fund.'},
+  equity:{name:'Equity & Wealth',plain:'Pay off debt & build wealth',color:'#2f5fa0',desc:'Extra payments to wipe out debt faster — then investing and long-term saving once the debt is gone.'},
+  lifestyle:{name:'Lifestyle Margin',plain:'Everyday life & fun',color:'#C59B27',desc:'Guilt-free money for eating out, hobbies, and extras. Planned on purpose, so enjoying it is part of the plan — not an accident.'}
 };
+const ALLOC_PRESETS={
+  starter:{reserves:50,equity:30,lifestyle:20},
+  debt:{reserves:20,equity:60,lifestyle:20},
+  wealth:{reserves:20,equity:50,lifestyle:30}
+};
+function setPreset(key){const p=ALLOC_PRESETS[key];if(!p)return;state.alloc={...p};save();renderAll();}
 function renderAlloc(container,editable){
   const c=calc();const a=state.alloc;
   const total=a.reserves+a.equity+a.lifestyle;
   container.innerHTML=['reserves','equity','lifestyle'].map(k=>{
     const m=ALLOC_META[k];const d=c[k];
     return `<div class="alloc">
-      <h4><span class="dot" style="background:${m.color}"></span>${m.name}</h4>
+      <h4><span class="dot" style="background:${m.color}"></span>${m.plain}</h4>
+      <div class="sub2">${m.name}</div>
       <div class="amt">${money(d.monthly)}<span style="font-size:.9rem;color:var(--muted)"> /mo</span></div>
       <div class="wk">Weekly sweep: <strong>${money(d.weekly)}</strong></div>
+      <div class="desc">${m.desc}</div>
       <div class="bar"><span style="width:${Math.min(100,a[k])}%;background:${m.color}"></span></div>
-      ${editable?`<div class="pctwrap"><input type="number" min="0" max="100" value="${a[k]}" onchange="setAlloc('${k}',this.value)"> <span style="color:var(--muted);font-size:.85rem">% of margin</span></div>`:`<div class="wk" style="margin-top:8px">${a[k]}% of margin</div>`}
+      ${editable?`<div class="pctwrap"><input type="number" min="0" max="100" value="${a[k]}" onchange="setAlloc('${k}',this.value)"> <span style="color:var(--muted);font-size:.85rem">% of leftover</span></div>`:`<div class="wk" style="margin-top:8px">${a[k]}% of leftover</div>`}
     </div>`;
-  }).join('') + (editable?`<div style="grid-column:1/-1;font-size:.82rem;color:${total===100?'var(--muted)':'var(--danger)'};font-weight:600">Allocation total: ${total}% ${total===100?'✓ balanced':'— should equal 100%'}</div>`:'');
+  }).join('') + (editable?`<div style="grid-column:1/-1;font-size:.82rem;color:${total===100?'var(--muted)':'var(--danger)'};font-weight:600">These three must add up to 100%. Right now: ${total}% ${total===100?'✓ balanced':'— adjust until it reaches 100%'}</div>`:'');
 }
 function setAlloc(k,v){state.alloc[k]=+v||0;save();renderAll();}
 const INCOME_TYPES=['Primary','Secondary/Side-Hustle','Passive'];
