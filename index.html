@@ -518,9 +518,10 @@
         </label>
       </div>
       <div id="equityBudget" style="margin:0 0 16px"></div>
+      <div id="debtFocusNote"></div>
       <div class="tbl-scroll">
         <table id="debtTable">
-          <thead><tr><th style="min-width:150px">Debt</th><th style="width:130px">Balance</th><th style="width:110px">APR %</th><th style="width:130px">Min Payment</th><th style="width:120px">Paid Off</th><th style="width:44px"></th></tr></thead>
+          <thead><tr><th style="min-width:150px">Debt</th><th style="width:120px">Balance</th><th style="width:90px">APR %</th><th style="width:110px">Min Payment</th><th style="width:160px">Payment To Make</th><th style="width:110px">Paid Off</th><th style="width:44px"></th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -721,6 +722,7 @@
   <span class="brand">The Provisioned Household</span>
   Your data is saved privately in this browser on your own device — nothing is uploaded anywhere. Back up regularly so a cleared browser never costs you your work.
   <div class="disc">This tool is provided for personal organization and educational purposes only. It is not financial, investment, tax, or legal advice. Figures are estimates based on the information you enter. Consult a qualified professional before making financial decisions.</div>
+  <div style="margin-top:10px;font-size:.66rem;letter-spacing:1px;opacity:.6">VERSION 2.2 · updated Aug 31, 2026</div>
 </footer>
 <div class="save-flash" id="flash">Saved ✓</div>
 <div class="overlay" id="welcome">
@@ -1243,18 +1245,43 @@ function renderDebt(){
   document.getElementById('debtExtra').value=state.debtExtra;
   const sim=simulateDebts();
   const tb=document.querySelector('#debtTable tbody');
+  const extra=+state.debtExtra||0;
   const order=[...state.debts].map((d,i)=>({d,i})).sort((a,b)=>state.debtStrategy==='snowball'?(+a.d.balance)-(+b.d.balance):(+b.d.apr)-(+a.d.apr));
+  // The "focus" debt is the first still-owed debt in your strategy order — it's
+  // the one your whole extra payment attacks this month. Everything else just
+  // gets its minimum.
+  const focus=order.find(({d})=>(+d.balance||0)>0.005);
+  const focusIdx=focus?focus.i:null;
+  const focusName=focus?focus.d.name:'';
   tb.innerHTML=order.map(({d,i})=>{
     const pm=sim.payoff[d.name];
-    const badge=(+d.balance>0.005)?(pm?fmtMonthYear(offsetMonths(pm)):'—'):'<span class="pill active">Cleared</span>';
-    return `<tr>
+    const bal=+d.balance||0,min=+d.min||0;
+    const isFocus=(i===focusIdx);
+    const cleared=bal<=0.005;
+    const badge=cleared?'<span class="pill active">Cleared</span>':(pm?fmtMonthYear(offsetMonths(pm)):'—');
+    const pay=cleared?0:Math.min(bal,min+(isFocus?extra:0));
+    const payCell=cleared
+      ? '<span style="color:var(--muted)">$0 — done ✓</span>'
+      : `<strong>${money0(pay)}</strong>${isFocus&&extra>0?` <span class="pill soon" title="Your whole extra payment goes here">👉 focus</span>`:''}`;
+    return `<tr${isFocus&&extra>0?' style="background:#fbf7ea"':''}>
       <td><input value="${esc(d.name)}" onchange="upd('debts',${i},'name',this.value)"></td>
       <td><input type="number" min="0" value="${d.balance}" onchange="upd('debts',${i},'balance',this.value)"></td>
       <td><input type="number" min="0" step="0.1" value="${d.apr}" onchange="upd('debts',${i},'apr',this.value)"></td>
       <td><input type="number" min="0" value="${d.min}" onchange="upd('debts',${i},'min',this.value)"></td>
+      <td style="font-size:.95rem">${payCell}</td>
       <td style="font-size:.82rem;color:var(--muted)">${badge}</td>
       <td><button class="icon-btn" onclick="del('debts',${i})">✕</button></td>
-    </tr>`;}).join('')||`<tr><td colspan="6" class="empty">No debts — add one below, or enjoy being debt-free.</td></tr>`;
+    </tr>`;}).join('')||`<tr><td colspan="7" class="empty">No debts — add one below, or enjoy being debt-free.</td></tr>`;
+  const strat=state.debtStrategy==='snowball'?'smallest balance first (Snowball)':'highest interest first (Avalanche)';
+  const fn=document.getElementById('debtFocusNote');
+  if(fn){
+    if(!focus){fn.innerHTML='';}
+    else if(extra>0){
+      fn.innerHTML=`<div class="priority-note done">👉 <strong>This month, do exactly this:</strong> pay the <strong>minimum</strong> on every debt, then send your entire <strong>${money0(extra)}/mo</strong> extra to <strong>${esc(focusName)}</strong> — that's your ${strat} target. So pay <strong>${money0(Math.min((+focus.d.balance||0),(+focus.d.min||0)+extra))}</strong> on ${esc(focusName)} and the minimum on the rest. When ${esc(focusName)} is paid off, the extra rolls to the next debt automatically — no recalculating.</div>`;
+    }else{
+      fn.innerHTML=`<div class="priority-note">Set an <strong>Extra monthly payment</strong> above and this will tell you exactly which debt to attack and how much to pay on each — no guesswork.</div>`;
+    }
+  }
   const yrs=Math.floor(sim.months/12),mos=sim.months%12;
   const dur=sim.months?`${yrs?yrs+'y ':''}${mos}m`:'—';
   document.getElementById('debtStats').innerHTML=`
