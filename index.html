@@ -156,6 +156,7 @@
   .fldgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px}
   .fld{display:block}
   .fld>span{font-size:.64rem;letter-spacing:1px;text-transform:uppercase;color:var(--muted);font-weight:600;display:block;margin-bottom:3px}
+  .fldgrid.emgrid .fld>span{min-height:2.1em;display:flex;align-items:flex-end;margin-bottom:5px}
   .goalbar{height:9px;border-radius:6px;background:var(--cream-dk);overflow:hidden;margin-top:14px}
   .goalbar>span{display:block;height:100%;border-radius:6px}
   .goalmeta{font-size:.82rem;color:var(--muted);margin-top:7px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
@@ -726,7 +727,7 @@
   <span class="brand">The Provisioned Household</span>
   Your data is saved privately in this browser on your own device — nothing is uploaded anywhere. Back up regularly so a cleared browser never costs you your work.
   <div class="disc">This tool is provided for personal organization and educational purposes only. It is not financial, investment, tax, or legal advice. Figures are estimates based on the information you enter. Consult a qualified professional before making financial decisions.</div>
-  <div style="margin-top:10px;font-size:.66rem;letter-spacing:1px;opacity:.6">VERSION 2.5 · updated Aug 31, 2026</div>
+  <div style="margin-top:10px;font-size:.66rem;letter-spacing:1px;opacity:.6">VERSION 2.6 · updated Aug 31, 2026</div>
 </footer>
 <div class="save-flash" id="flash">Saved ✓</div>
 <div class="overlay" id="welcome">
@@ -1111,12 +1112,12 @@ function renderEmergency(){
     }
   }
   document.getElementById('emergencyBox').innerHTML=`
-    <div class="fldgrid" style="max-width:720px;margin-bottom:4px">
-      <label class="fld"><span style="white-space:nowrap" title="How many months of your overhead to hold in cash">Months to hold</span><input type="number" min="1" step="1" value="${ef.monthsTarget}" onchange="setEmMonths(this.value)"></label>
+    <div class="fldgrid emgrid" style="max-width:840px;margin-bottom:4px">
+      <label class="fld"><span title="How many months of your overhead to hold in cash">Months to hold</span><input type="number" min="1" step="1" value="${ef.monthsTarget}" onchange="setEmMonths(this.value)"></label>
       <label class="fld"><span>Currently saved</span><input type="number" min="0" step="1" value="${saved}" onchange="setEmSaved(this.value)"></label>
       <label class="fld"><span>Target (auto)</span><div class="cell-output">${noOverhead?'—':money0(target)}</div></label>
-      <label class="fld"><span title="Comes straight from your Reserves % on Treasury">Going in each month</span><div class="cell-output">${noOverhead?'—':money0(monthly)}</div></label>
-      <label class="fld"><span>Want it funded by (optional)</span><input type="date" value="${ef.wantBy||''}" onchange="setEmWantBy(this.value)"></label>
+      <label class="fld"><span title="Comes straight from your Reserves % on Treasury">Going in monthly</span><div class="cell-output">${noOverhead?'—':money0(monthly)}</div></label>
+      <label class="fld"><span>Funded by (optional)</span><input type="date" value="${ef.wantBy||''}" onchange="setEmWantBy(this.value)"></label>
     </div>
     ${noOverhead
       ?`<div class="card-note" style="margin-top:10px">Add your Four Walls and expenses on the <strong>Treasury</strong> tab first — the target here is months to hold × your overhead, so it needs those numbers before it can calculate.</div>`
