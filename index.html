@@ -300,7 +300,7 @@
       <div class="kicker">The Provisioned Household</div>
       <h1>CFO Command Center</h1>
       <div class="tag">Quiet Stewardship &nbsp;·&nbsp; Systems Integrity &nbsp;·&nbsp; Sovereign Rest</div>
-      <div style="margin-top:7px;font-size:.6rem;letter-spacing:2.5px;color:var(--gold-lt);font-weight:600">VERSION 3.2 · AUG 31, 2026</div>
+      <div style="margin-top:7px;font-size:.6rem;letter-spacing:2.5px;color:var(--gold-lt);font-weight:600">VERSION 3.3 · AUG 31, 2026</div>
     </div>
   </div>
 </header>
@@ -479,7 +479,7 @@
     <div class="card">
       <div class="card-title">🔁 Sweep Log — Did the Money Actually Move? <span class="badge">Monthly tracker</span></div>
       <hr class="gold-rule">
-      <div class="card-note" style="margin-bottom:14px">A <strong>sweep</strong> is you actually moving money from checking into one of your three buckets. The box below tells you exactly how much to move into each — pick <strong>Per week / Per paycheck / Per month</strong> to match how you're paid. Then log each transfer you make so you can confirm you stayed on plan.</div>
+      <div class="card-note" style="margin-bottom:14px">A <strong>sweep</strong> is you actually moving money from checking into one of your three buckets. The box below tells you exactly how much to move into each — pick <strong>Per week / Per 2 weeks / Per month</strong> to match how you're paid. Then log each transfer you make so you can confirm you stayed on plan.</div>
       <div id="sweepTargets"></div>
       <div class="cal-toolbar" style="margin-bottom:14px">
         <div class="cal-nav">
@@ -749,7 +749,7 @@
   <span class="brand">The Provisioned Household</span>
   Your data is saved privately in this browser on your own device — nothing is uploaded anywhere. Back up regularly so a cleared browser never costs you your work.
   <div class="disc">This tool is provided for personal organization and educational purposes only. It is not financial, investment, tax, or legal advice. Figures are estimates based on the information you enter. Consult a qualified professional before making financial decisions.</div>
-  <div style="margin-top:10px;font-size:.66rem;letter-spacing:1px;opacity:.6">VERSION 3.2 · updated Aug 31, 2026</div>
+  <div style="margin-top:10px;font-size:.66rem;letter-spacing:1px;opacity:.6">VERSION 3.3 · updated Aug 31, 2026</div>
 </footer>
 <div class="save-flash" id="flash">Saved ✓</div>
 <div class="overlay" id="welcome">
@@ -976,7 +976,7 @@ const ALLOC_PRESETS={
 };
 function setPreset(key){const p=ALLOC_PRESETS[key];if(!p)return;state.alloc={...p};save();renderAll();}
 function renderAlloc(container,editable){
-  const c=calc();const a=state.alloc;
+  const c=calc();const a=state.alloc;const cad=cadence();
   const total=a.reserves+a.equity+a.lifestyle;
   container.innerHTML=['reserves','equity','lifestyle'].map(k=>{
     const m=ALLOC_META[k];const d=c[k];
@@ -984,7 +984,7 @@ function renderAlloc(container,editable){
       <h4><span class="dot" style="background:${m.color}"></span>${m.plain}</h4>
       <div class="sub2">${m.name}</div>
       <div class="amt">${money(d.monthly)}<span style="font-size:.9rem;color:var(--muted)"> /mo</span></div>
-      <div class="wk">Weekly sweep: <strong>${money(d.weekly)}</strong></div>
+      ${cad.word!=='per month'?`<div class="wk">Sweep ${cad.word}: <strong>${money(d.monthly*cad.F)}${cad.suf}</strong></div>`:''}
       <div class="desc">${m.desc}</div>
       <div class="bar"><span style="width:${Math.min(100,a[k])}%;background:${m.color}"></span></div>
       ${editable?`<div class="pctwrap"><input type="number" min="0" max="100" value="${a[k]}" onchange="setAlloc('${k}',this.value)"> <span style="color:var(--muted);font-size:.85rem">% of leftover</span></div>`:`<div class="wk" style="margin-top:8px">${a[k]}% of leftover</div>`}
@@ -1211,19 +1211,19 @@ function ledgerToggle(){
   return `<div class="cal-modes">
     <button class="btn btn-sm cal-mode ${ledgerView==='month'?'active':''}" onclick="setLedgerView('month')">Per month</button>
     <button class="btn btn-sm cal-mode ${ledgerView==='week'?'active':''}" onclick="setLedgerView('week')">Per week</button>
-    <button class="btn btn-sm cal-mode ${ledgerView==='biweek'?'active':''}" onclick="setLedgerView('biweek')">Per paycheck</button>
+    <button class="btn btn-sm cal-mode ${ledgerView==='biweek'?'active':''}" onclick="setLedgerView('biweek')">Per 2 weeks</button>
   </div>`;
 }
-function cadence(){ensureLedgerView();return {F:ledgerFactor(ledgerView),suf:ledgerView==='week'?'/wk':ledgerView==='biweek'?'/paycheck':'/mo',word:ledgerView==='week'?'per week':ledgerView==='biweek'?'per paycheck':'per month'};}
-function setLedgerView(v){ledgerView=v;renderAllocLedger();renderSweepTargets();renderSinking();renderSavings();}
+function cadence(){ensureLedgerView();return {F:ledgerFactor(ledgerView),suf:ledgerView==='week'?'/wk':ledgerView==='biweek'?'/2 wks':'/mo',word:ledgerView==='week'?'per week':ledgerView==='biweek'?'every 2 weeks':'per month'};}
+function setLedgerView(v){ledgerView=v;renderAllocLedger();renderSweepTargets();renderSinking();renderSavings();renderTreasuryAlloc();renderDashboard();}
 function renderAllocLedger(){
   const el=document.getElementById('allocLedger');if(!el)return;
   const c=calc();
   if(c.income<=0||c.margin<-0.005){el.innerHTML='';return;} // nothing to assign yet, or a deficit (the red alert covers that)
   ensureLedgerView();
   const F=ledgerFactor(ledgerView);
-  const suf=ledgerView==='week'?'/wk':ledgerView==='biweek'?'/paycheck':'/mo';
-  const per=ledgerView==='week'?'each week':ledgerView==='biweek'?'each paycheck (every 2 weeks)':'each month';
+  const suf=ledgerView==='week'?'/wk':ledgerView==='biweek'?'/2 wks':'/mo';
+  const per=ledgerView==='week'?'each week':ledgerView==='biweek'?'every 2 weeks':'each month';
   const m=x=>money0(x*F)+suf;
   const p=emergencyPlan();
   const ef=p.full?0:p.efMonthly;
@@ -1269,8 +1269,8 @@ function renderSweepTargets(){
   if(c.income<=0||c.margin<=0){el.innerHTML='';return;}
   ensureLedgerView();
   const F=ledgerFactor(ledgerView);
-  const suf=ledgerView==='week'?'/wk':ledgerView==='biweek'?'/paycheck':'/mo';
-  const per=ledgerView==='week'?'each week':ledgerView==='biweek'?'each paycheck':'each month';
+  const suf=ledgerView==='week'?'/wk':ledgerView==='biweek'?'/2 wks':'/mo';
+  const per=ledgerView==='week'?'each week':ledgerView==='biweek'?'every 2 weeks':'each month';
   const rows=[['🔴 Reserves',c.reserves.monthly,'savings — Emergency Fund, sinking funds, goals'],['🔵 Equity',c.equity.monthly,'debt payoff & wealth'],['🟡 Lifestyle',c.lifestyle.monthly,'everyday spending']];
   el.innerHTML=`<div class="ledger" style="border-left-color:var(--blue)">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:2px"><h4 style="margin:0">Move this much into each bucket, ${per}</h4>${ledgerToggle()}</div>
