@@ -727,7 +727,7 @@
   <span class="brand">The Provisioned Household</span>
   Your data is saved privately in this browser on your own device — nothing is uploaded anywhere. Back up regularly so a cleared browser never costs you your work.
   <div class="disc">This tool is provided for personal organization and educational purposes only. It is not financial, investment, tax, or legal advice. Figures are estimates based on the information you enter. Consult a qualified professional before making financial decisions.</div>
-  <div style="margin-top:10px;font-size:.66rem;letter-spacing:1px;opacity:.6">VERSION 2.6 · updated Aug 31, 2026</div>
+  <div style="margin-top:10px;font-size:.66rem;letter-spacing:1px;opacity:.6">VERSION 2.7 · updated Aug 31, 2026</div>
 </footer>
 <div class="save-flash" id="flash">Saved ✓</div>
 <div class="overlay" id="welcome">
@@ -1081,34 +1081,50 @@ function monthsUntil(dateStr){
   let m=(d.getFullYear()-n.getFullYear())*12+(d.getMonth()-n.getMonth());
   return Math.max(1,m);
 }
-function renderEmergency(){
-  const c=calc();const ef=state.goals.emergency;
+// Works out how the Reserves stream is split between the Emergency Fund and
+// what's left for sinking funds & goals. With a "funded by" date, the Emergency
+// Fund takes only what it needs to hit that date and the rest is freed up; with
+// no date, it takes the whole stream (fills fastest) and nothing is left yet.
+function emergencyPlan(){
+  const c=calc();
+  const ef=state.goals.emergency;
+  const stream=c.reserves.monthly;
   const target=c.overhead*(+ef.monthsTarget||0);
   const saved=+ef.saved||0;
   const remaining=Math.max(0,target-saved);
-  const monthly=c.reserves.monthly; // the Emergency Fund is first in line for the Reserves stream
+  const full=target>0&&remaining<=0.005;
+  let efMonthly=0,dateOK=true,projDate='—',reqMonthly=0;
+  if(target>0&&!full){
+    if(stream<=0){efMonthly=0;}
+    else if(ef.wantBy){
+      const mWant=Math.max(1,monthsUntil(ef.wantBy));
+      reqMonthly=remaining/mWant;
+      if(reqMonthly<=stream+0.5){efMonthly=Math.min(stream,reqMonthly);dateOK=true;projDate=fmtMonthYear(parseISO(ef.wantBy));}
+      else{efMonthly=stream;dateOK=false;projDate=fmtMonthYear(offsetMonths(Math.ceil(remaining/stream)));}
+    }else{
+      efMonthly=stream;projDate=fmtMonthYear(offsetMonths(Math.ceil(remaining/stream)));
+    }
+  }
+  const efLeftover=Math.max(0,stream-efMonthly);
+  return {c,ef,stream,target,saved,remaining,full,efMonthly,efLeftover,dateOK,projDate,reqMonthly};
+}
+function renderEmergency(){
+  const p=emergencyPlan();
+  const {c,ef,target,saved,stream,full,efMonthly,efLeftover,dateOK,projDate,reqMonthly}=p;
   const covered=c.overhead>0?saved/c.overhead:0;
   const noOverhead=c.overhead<=0;
   let projHtml='';
   if(!noOverhead){
-    if(remaining<=0){
-      projHtml=`<div class="priority-note done" style="margin-top:14px">✅ <strong>Fully funded.</strong> Your Emergency Fund has reached its ${money0(target)} target — ${(+ef.monthsTarget||0)} months of expenses. From here, your ${money0(monthly)}/mo Reserves flows on to the sinking funds and goals below.</div>`;
-    }else if(monthly<=0){
+    if(full){
+      projHtml=`<div class="priority-note done" style="margin-top:14px">✅ <strong>Fully funded.</strong> Your Emergency Fund has reached its ${money0(target)} target — ${(+ef.monthsTarget||0)} months of expenses. That frees up your whole ${money0(stream)}/mo Reserves — see the note below for where to send it next.</div>`;
+    }else if(stream<=0){
       projHtml=`<div class="priority-note" style="margin-top:14px">Right now $0/mo is set to go here. Set your “Save for emergencies” % on the <strong>Treasury</strong> tab above 0 so money actually flows into this fund each month.</div>`;
+    }else if(ef.wantBy&&!dateOK){
+      projHtml=`<div class="priority-note" style="margin-top:14px">🎯 To hit <strong>${fmtMonthYear(parseISO(ef.wantBy))}</strong> you'd need about <strong>${money0(reqMonthly)}/mo</strong> — more than your ${money0(stream)}/mo Reserves. Putting the whole ${money0(stream)}/mo in gets you there by <strong>${projDate}</strong> instead. <span style="color:var(--danger);font-weight:600">Nothing is left for sinking funds &amp; goals until it's funded.</span></div>`;
+    }else if(ef.wantBy&&dateOK){
+      projHtml=`<div class="priority-note" style="margin-top:14px">🎯 Putting <strong>${money0(efMonthly)}/mo</strong> into your Emergency Fund reaches your <strong>${projDate}</strong> goal. That leaves <strong>${money0(efLeftover)}/mo</strong> of your Reserves free for sinking funds &amp; goals (see the breakdown below).</div>`;
     }else{
-      const monthsToFund=Math.ceil(remaining/monthly);
-      const projDate=fmtMonthYear(offsetMonths(monthsToFund));
-      let statusLine='';
-      if(ef.wantBy){
-        const mWant=Math.max(1,monthsUntil(ef.wantBy));
-        const reqMonthly=remaining/mWant;
-        if(reqMonthly<=monthly+0.5){
-          statusLine=`<div style="margin-top:7px;color:var(--green);font-weight:600">✓ On pace — at ${money0(monthly)}/mo you'll actually reach it by ${projDate}, on or before your ${fmtMonthYear(parseISO(ef.wantBy))} goal.</div>`;
-        }else{
-          statusLine=`<div style="margin-top:7px;color:var(--danger);font-weight:600">To hit ${fmtMonthYear(parseISO(ef.wantBy))} you'd need about ${money0(reqMonthly)}/mo, but only ${money0(monthly)}/mo is going in. Raise your “Save for emergencies” % on Treasury — or plan on ${projDate} instead.</div>`;
-        }
-      }
-      projHtml=`<div class="priority-note" style="margin-top:14px">🎯 At <strong>${money0(monthly)}/mo</strong> — your whole Reserves stream, which fills this fund first — you'll be fully funded by <strong>${projDate}</strong>, about ${monthsToFund} month${monthsToFund===1?'':'s'} from now.${statusLine}</div>`;
+      projHtml=`<div class="priority-note" style="margin-top:14px">🎯 At <strong>${money0(stream)}/mo</strong> — your whole Reserves — you'll be funded by <strong>${projDate}</strong>. Want money free for sinking funds &amp; goals sooner? Set a <strong>Funded by</strong> date and the Emergency Fund will take only what it needs, freeing up the rest.</div>`;
     }
   }
   document.getElementById('emergencyBox').innerHTML=`
@@ -1116,7 +1132,7 @@ function renderEmergency(){
       <label class="fld"><span title="How many months of your overhead to hold in cash">Months to hold</span><input type="number" min="1" step="1" value="${ef.monthsTarget}" onchange="setEmMonths(this.value)"></label>
       <label class="fld"><span>Currently saved</span><input type="number" min="0" step="1" value="${saved}" onchange="setEmSaved(this.value)"></label>
       <label class="fld"><span>Target (auto)</span><div class="cell-output">${noOverhead?'—':money0(target)}</div></label>
-      <label class="fld"><span title="Comes straight from your Reserves % on Treasury">Going in monthly</span><div class="cell-output">${noOverhead?'—':money0(monthly)}</div></label>
+      <label class="fld"><span title="What this fund actually pulls from your Reserves each month">Going in monthly</span><div class="cell-output">${noOverhead?'—':money0(efMonthly)}</div></label>
       <label class="fld"><span>Funded by (optional)</span><input type="date" value="${ef.wantBy||''}" onchange="setEmWantBy(this.value)"></label>
     </div>
     ${noOverhead
@@ -1173,14 +1189,26 @@ function renderGoalsBudgets(){
     const efFull=efTarget>0&&efSaved>=efTarget-0.005;
     if(deficit||(budget<=0&&committed<=0&&efTarget<=0)){rEl.innerHTML='';}
     else if(efTarget>0&&!efFull){
-      // Emergency Fund is first in line — it takes the whole Reserves stream until it's full.
-      const rem=efTarget-efSaved;
-      const proj=budget>0?fmtMonthYear(offsetMonths(Math.ceil(rem/budget))):'—';
-      rEl.innerHTML=`<div class="alert good"><div class="ico">🛡️</div><div class="body"><span class="head">Your Emergency Fund comes first</span>${calcRows([
-        {l:'Money you save each month (Reserves)',v:money0(budget)},
-        {l:'→ All of it fills your Emergency Fund first',v:'–'+money0(budget)},
-        {l:'= Left this month for anything else',v:'$0',tot:true}
-      ])}<div style="margin-top:9px">Until your Emergency Fund is full (about <strong>${proj}</strong>), your whole <strong>${money0(budget)}/mo</strong> goes there first. Once it's funded, this money frees up — the strongest next move is to throw it at <strong>debt</strong>, though funding a goal below is your call.${committed>0?` <span style="color:var(--muted)">(Your sinking funds &amp; goals would need ${money0(committed)}/mo if you decide to fund them.)</span>`:''}</div></div></div>`;
+      // Emergency Fund is first in line. With a "funded by" date it takes only what
+      // it needs; the leftover is what's available for sinking funds & goals.
+      const p=emergencyPlan();
+      const avail=p.efLeftover;
+      const gap=committed-avail;
+      let tail;
+      if(avail<=0.005){
+        tail=`Right now your whole <strong>${money0(p.stream)}/mo</strong> Reserves is filling your Emergency Fund (funded by about <strong>${p.projDate}</strong>), so there's <strong>$0</strong> for sinking funds &amp; goals yet. Give the Emergency Fund a later <strong>Funded by</strong> date to free some up now, or fund them once it's full.`;
+      }else if(gap<=0.005){
+        tail=`Your sinking funds &amp; goals need <strong>${money0(committed)}/mo</strong>, which fits inside the <strong>${money0(avail)}/mo</strong> left — with <strong>${money0(avail-committed)}/mo</strong> to spare.`;
+      }else{
+        tail=`Your sinking funds &amp; goals need <strong>${money0(committed)}/mo</strong>, but only <strong>${money0(avail)}/mo</strong> is free after the Emergency Fund — <strong>short by ${money0(gap)}/mo</strong>. Push a due date out, trim a target, or give the Emergency Fund a later Funded-by date.`;
+      }
+      const cls=gap>0.005?'bad':'good';
+      const ico=gap>0.005?'⚠️':'🛡️';
+      rEl.innerHTML=`<div class="alert ${cls}"><div class="ico">${ico}</div><div class="body"><span class="head">What's left for sinking funds &amp; goals</span>${calcRows([
+        {l:'Money you save each month (Reserves)',v:money0(p.stream)},
+        {l:'– Emergency Fund takes first',v:'–'+money0(p.efMonthly)},
+        {l:'= Left for sinking funds &amp; goals',v:money0(avail),tot:true}
+      ])}<div style="margin-top:9px">${tail}</div></div></div>`;
     }
     else if(efTarget<=0){
       rEl.innerHTML=`<div class="alert good"><div class="ico">🛡️</div><div class="body"><span class="head">Set your Emergency Fund target first</span>Choose how many months to hold above — your Reserves money fills the Emergency Fund before anything else. Once it's fully funded, that money frees up to send toward debt or goals.</div></div>`;
