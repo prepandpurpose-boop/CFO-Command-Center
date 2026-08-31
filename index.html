@@ -78,6 +78,11 @@
   .ledger .lrow.tot{border-bottom:none;border-top:2px solid var(--gold);margin-top:4px;padding-top:11px;font-weight:700;font-size:1.16rem}
   .ledger .lrow.tot.pos{color:var(--green)}
   .ledger .lrow.tot.neg{color:var(--danger)}
+  .ledger .lgrp{margin-top:14px;padding-top:8px;border-top:1px dashed var(--slate-dk)}
+  .ledger .lgrp:first-of-type{border-top:none;margin-top:6px}
+  .ledger .lgrp-h{display:flex;justify-content:space-between;gap:16px;align-items:baseline;font-weight:700;color:var(--green);font-size:1.05rem;padding:2px 0 4px}
+  .ledger .lgrp-h b{white-space:nowrap;font-variant-numeric:tabular-nums}
+  .ledger .freebar{margin-top:16px;padding-top:12px;border-top:2px solid var(--gold);display:flex;justify-content:space-between;gap:16px;font-weight:700;font-size:1.1rem;color:var(--green)}
   .gold-rule{height:2px;background:linear-gradient(90deg,var(--gold),transparent);border:none;margin:2px 0 18px}
   .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:18px;margin-bottom:8px}
   .stat{background:#fff;border-radius:var(--radius);padding:22px;border:1px solid var(--cream-dk);box-shadow:var(--shadow);position:relative;overflow:hidden}
@@ -468,8 +473,8 @@
     <div class="card">
       <div class="card-title">🔁 Sweep Log — Did the Money Actually Move? <span class="badge">Monthly tracker</span></div>
       <hr class="gold-rule">
-      <div class="card-note" style="margin-bottom:8px">A <strong>sweep</strong> is you moving money out of your checking account and into one of your three streams — <strong>Reserves</strong> (emergency &amp; savings), <strong>Equity</strong> (debt payoff &amp; wealth), and <strong>Lifestyle</strong> (guilt-free spending). The allocation split above turns your Sovereign Margin into a planned monthly amount for each stream; this log is where you check off that you <em>actually made the transfer</em>, because a plan only works if the money really moves. <strong>Only savings transfers belong here — never your bills or everyday spending.</strong></div>
-      <div class="priority-note">Each time you move money into a stream, click <strong>＋ Log a transfer</strong> at the bottom, pick the stream, and enter the amount. The three cards then show <strong>what you've actually swept this month vs. what you planned</strong>, so you can see at a glance whether you're keeping up. Use the <strong>‹ ›</strong> arrows to look back at any past month — every transfer you log is kept for good.</div>
+      <div class="card-note" style="margin-bottom:14px">A <strong>sweep</strong> is you actually moving money from checking into one of your three buckets. The box below tells you exactly how much to move into each — pick <strong>Per week / Per paycheck / Per month</strong> to match how you're paid. Then log each transfer you make so you can confirm you stayed on plan.</div>
+      <div id="sweepTargets"></div>
       <div class="cal-toolbar" style="margin-bottom:14px">
         <div class="cal-nav">
           <button class="btn btn-ghost btn-sm" onclick="sweepShift(-1)" title="Previous month">‹</button>
@@ -738,7 +743,7 @@
   <span class="brand">The Provisioned Household</span>
   Your data is saved privately in this browser on your own device — nothing is uploaded anywhere. Back up regularly so a cleared browser never costs you your work.
   <div class="disc">This tool is provided for personal organization and educational purposes only. It is not financial, investment, tax, or legal advice. Figures are estimates based on the information you enter. Consult a qualified professional before making financial decisions.</div>
-  <div style="margin-top:10px;font-size:.66rem;letter-spacing:1px;opacity:.6">VERSION 2.8 · updated Aug 31, 2026</div>
+  <div style="margin-top:10px;font-size:.66rem;letter-spacing:1px;opacity:.6">VERSION 3.1 · updated Aug 31, 2026</div>
 </footer>
 <div class="save-flash" id="flash">Saved ✓</div>
 <div class="overlay" id="welcome">
@@ -1054,6 +1059,7 @@ function inSweepMonth(iso){const d=parseISO(iso);return !!d&&d.getFullYear()===s
 function sweepShift(n){let m=sweepView.m+n,y=sweepView.y;if(m<0){m=11;y--;}if(m>11){m=0;y++;}sweepView.m=m;sweepView.y=y;renderSweeps();}
 function sweepToday(){const t=new Date();sweepView.y=t.getFullYear();sweepView.m=t.getMonth();renderSweeps();}
 function renderSweeps(){
+  renderSweepTargets();
   const c=calc();
   const planned={Reserves:c.reserves.monthly,Equity:c.equity.monthly,Lifestyle:c.lifestyle.monthly};
   const actual={Reserves:0,Equity:0,Lifestyle:0};
@@ -1186,103 +1192,91 @@ function renderAlerts(){
   }
   els.forEach(el=>{if(el)el.innerHTML=html;});
 }
+let ledgerView=null; // 'month' | 'week' | 'biweek' — defaults to how you're actually paid
+function primaryFreq(){
+  let best='monthly',bestAmt=-1;
+  state.income.forEach(r=>{const m=monthlyEquivalent(r);if(m>bestAmt){bestAmt=m;best=r.freq||'monthly';}});
+  return best;
+}
+function ledgerFactor(v){return v==='week'?12/52:v==='biweek'?12/26:1;}
+function ensureLedgerView(){if(ledgerView===null){const f=primaryFreq();ledgerView=f==='weekly'?'week':f==='biweekly'?'biweek':'month';}}
+function ledgerToggle(){
+  ensureLedgerView();
+  return `<div class="cal-modes">
+    <button class="btn btn-sm cal-mode ${ledgerView==='month'?'active':''}" onclick="setLedgerView('month')">Per month</button>
+    <button class="btn btn-sm cal-mode ${ledgerView==='week'?'active':''}" onclick="setLedgerView('week')">Per week</button>
+    <button class="btn btn-sm cal-mode ${ledgerView==='biweek'?'active':''}" onclick="setLedgerView('biweek')">Per paycheck</button>
+  </div>`;
+}
+function cadence(){ensureLedgerView();return {F:ledgerFactor(ledgerView),suf:ledgerView==='week'?'/wk':ledgerView==='biweek'?'/paycheck':'/mo',word:ledgerView==='week'?'per week':ledgerView==='biweek'?'per paycheck':'per month'};}
+function setLedgerView(v){ledgerView=v;renderAllocLedger();renderSweepTargets();renderSinking();renderSavings();}
 function renderAllocLedger(){
   const el=document.getElementById('allocLedger');if(!el)return;
   const c=calc();
   if(c.income<=0||c.margin<-0.005){el.innerHTML='';return;} // nothing to assign yet, or a deficit (the red alert covers that)
+  ensureLedgerView();
+  const F=ledgerFactor(ledgerView);
+  const suf=ledgerView==='week'?'/wk':ledgerView==='biweek'?'/paycheck':'/mo';
+  const per=ledgerView==='week'?'each week':ledgerView==='biweek'?'each paycheck (every 2 weeks)':'each month';
+  const m=x=>money0(x*F)+suf;
   const p=emergencyPlan();
   const ef=p.full?0:p.efMonthly;
-  const sinking=(state.goals.sinking||[]).reduce((s,g)=>{const m=monthsUntil(g.due);return s+(m?Math.max(0,((+g.target||0)-(+g.saved||0)))/m:0);},0);
-  const savings=(state.goals.savings||[]).reduce((s,g)=>{if(!g.date)return s;const m=monthsUntil(g.date);return s+(m?Math.max(0,((+g.target||0)-(+g.saved||0)))/m:0);},0);
+  const sinking=(state.goals.sinking||[]).reduce((s,g)=>{const mo=monthsUntil(g.due);return s+(mo?Math.max(0,((+g.target||0)-(+g.saved||0)))/mo:0);},0);
+  const savings=(state.goals.savings||[]).reduce((s,g)=>{if(!g.date)return s;const mo=monthsUntil(g.date);return s+(mo?Math.max(0,((+g.target||0)-(+g.saved||0)))/mo:0);},0);
   const debtExtra=+state.debtExtra||0;
   const left=c.margin-ef-sinking-savings-debtExtra;
   const pos=left>=-0.005;
+  const toggle=ledgerToggle();
+  const R=c.reserves.monthly,E=c.equity.monthly,L=c.lifestyle.monthly;
+  const resLeft=R-ef-sinking-savings;
+  const eqLeft=E-debtExtra;
+  const freeTotal=Math.max(0,resLeft)+Math.max(0,eqLeft)+L;
+  const grp=(title,note,sweep,rows,leftLabel,leftVal)=>`
+    <div class="lgrp">
+      <div class="lgrp-h"><span>${title} <span style="font-weight:400;color:var(--muted);font-size:.78rem">${note}</span></span><b>${m(sweep)}</b></div>
+      ${rows.map(([l,v])=>`<div class="lrow"><span class="lbl">${l}</span><b>–${m(v)}</b></div>`).join('')}
+      <div class="lrow tot ${leftVal>=-0.005?'pos':'neg'}"><span class="lbl">${leftLabel}</span><b>${m(Math.abs(leftVal))}</b></div>
+    </div>`;
   el.innerHTML=`<div class="ledger">
-    <h4>💵 Where your leftover goes this month</h4>
-    <div class="sub">Start with what's left after your bills, then give every dollar a job. As you fund each thing below, the amount left to spend counts down.</div>
-    <div class="lrow start"><span class="lbl">Leftover after your bills (your margin)</span><b>${money0(c.margin)}</b></div>
-    <div class="lrow"><span class="lbl">🛡️ Emergency Fund</span><b>–${money0(ef)}</b></div>
-    <div class="lrow"><span class="lbl">🪣 Sinking funds</span><b>–${money0(sinking)}</b></div>
-    <div class="lrow"><span class="lbl">🎯 Savings goals (with a date)</span><b>–${money0(savings)}</b></div>
-    <div class="lrow"><span class="lbl">💳 Extra debt payment</span><b>–${money0(debtExtra)}</b></div>
-    <div class="lrow tot ${pos?'pos':'neg'}"><span class="lbl">${pos?'= Left to spend or invest':'= Over-assigned by'}</span><b>${money0(Math.abs(left))}</b></div>
-    <div class="sub" style="margin:9px 0 0">${pos
-      ?`This <strong>${money0(left)}/mo</strong> is free — everyday spending, fun, or extra toward any goal you like. When it reaches $0, every dollar has a job.`
-      :`You've given <strong>${money0(-left)}/mo</strong> more jobs than you have money for. Trim a category above, lower your extra debt payment, or free up room on the Treasury tab.`}</div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:2px"><h4 style="margin:0">💵 Your money, ${per}</h4>${toggle}</div>
+    <div class="sub">Each payday you sweep into three buckets (see the Sweep Log on Treasury). Here's how much each bucket gets <strong>${per}</strong> and what it funds — change a goal or payment and these update live.</div>
+    ${grp('🔴 Reserves','savings bucket',R,[['🛡️ Emergency Fund',ef],['🪣 Sinking funds',sinking],['🎯 Savings goals',savings]],resLeft>=-0.005?'= Still free in Reserves':'⚠ Over your Reserves by',resLeft)}
+    ${grp('🔵 Equity','debt & wealth bucket',E,[['💳 Extra debt payment',debtExtra]],eqLeft>=-0.005?'= Still free in Equity':'⚠ Over your Equity by',eqLeft)}
+    <div class="lgrp"><div class="lgrp-h"><span>🟡 Lifestyle <span style="font-weight:400;color:var(--muted);font-size:.78rem">everyday spending</span></span><b>${m(L)}</b></div><div class="sub" style="margin:5px 0 0">Yours to spend on everyday life — no assigning needed.</div></div>
+    <div class="freebar"><span>Free to spend / not yet assigned</span><span>${m(freeTotal)}</span></div>
+  </div>`;
+}
+function renderSweepTargets(){
+  const el=document.getElementById('sweepTargets');if(!el)return;
+  const c=calc();
+  if(c.income<=0||c.margin<=0){el.innerHTML='';return;}
+  ensureLedgerView();
+  const F=ledgerFactor(ledgerView);
+  const suf=ledgerView==='week'?'/wk':ledgerView==='biweek'?'/paycheck':'/mo';
+  const per=ledgerView==='week'?'each week':ledgerView==='biweek'?'each paycheck':'each month';
+  const rows=[['🔴 Reserves',c.reserves.monthly,'savings — Emergency Fund, sinking funds, goals'],['🔵 Equity',c.equity.monthly,'debt payoff & wealth'],['🟡 Lifestyle',c.lifestyle.monthly,'everyday spending']];
+  el.innerHTML=`<div class="ledger" style="border-left-color:var(--blue)">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:2px"><h4 style="margin:0">Move this much into each bucket, ${per}</h4>${ledgerToggle()}</div>
+    <div class="sub">${per.charAt(0).toUpperCase()+per.slice(1)}, transfer these amounts into their accounts, then log below what you actually moved. What each bucket then funds is shown on the Goals &amp; Debt tab.</div>
+    ${rows.map(([n,v,note])=>`<div class="lrow"><span class="lbl">${n} <span style="color:var(--muted);font-size:.78rem;font-weight:400">${note}</span></span><b>${money0(v*F)}${suf}</b></div>`).join('')}
   </div>`;
 }
 function renderGoalsBudgets(){
   renderAlerts();
   renderAllocLedger();
-  const b=streamBudgets();
-  const c=calc();
-  const deficit=c.income>0&&c.margin<-0.005;
-  const calcRows=rows=>`<div class="budget-calc">${rows.map(r=>`<div class="${r.tot?'tot':''}"><span>${r.l}</span><b>${r.v}</b></div>`).join('')}</div>`;
-  const rEl=document.getElementById('reservesBudget');
-  if(rEl){
-    const budget=b.reservesBudget,committed=b.savingsCommitted;
-    const efTarget=c.overhead*(+state.goals.emergency.monthsTarget||0);
-    const efSaved=+state.goals.emergency.saved||0;
-    const efFull=efTarget>0&&efSaved>=efTarget-0.005;
-    if(deficit||(budget<=0&&committed<=0&&efTarget<=0)){rEl.innerHTML='';}
-    else if(efTarget>0&&!efFull){
-      // Emergency Fund is first in line. With a "funded by" date it takes only what
-      // it needs; the leftover is what's available for sinking funds & goals.
-      const p=emergencyPlan();
-      const avail=p.efLeftover;
-      const gap=committed-avail;
-      let tail;
-      if(avail<=0.005){
-        tail=`Right now your whole <strong>${money0(p.stream)}/mo</strong> Reserves is filling your Emergency Fund (funded by about <strong>${p.projDate}</strong>), so there's <strong>$0</strong> for sinking funds &amp; goals yet. Give the Emergency Fund a later <strong>Funded by</strong> date to free some up now, or fund them once it's full.`;
-      }else if(gap<=0.005){
-        tail=`Your sinking funds &amp; goals need <strong>${money0(committed)}/mo</strong>, which fits inside the <strong>${money0(avail)}/mo</strong> left — with <strong>${money0(avail-committed)}/mo</strong> to spare.`;
-      }else{
-        tail=`Your sinking funds &amp; goals need <strong>${money0(committed)}/mo</strong>, but only <strong>${money0(avail)}/mo</strong> is free after the Emergency Fund — <strong>short by ${money0(gap)}/mo</strong>. Push a due date out, trim a target, or give the Emergency Fund a later Funded-by date.`;
-      }
-      const cls=gap>0.005?'bad':'good';
-      const ico=gap>0.005?'⚠️':'🛡️';
-      rEl.innerHTML=`<div class="alert ${cls}"><div class="ico">${ico}</div><div class="body"><span class="head">What's left for sinking funds &amp; goals</span>${calcRows([
-        {l:'Money you save each month (Reserves)',v:money0(p.stream)},
-        {l:'– Emergency Fund takes first',v:'–'+money0(p.efMonthly)},
-        {l:'= Left for sinking funds &amp; goals',v:money0(avail),tot:true}
-      ])}<div style="margin-top:9px">${tail}</div></div></div>`;
-    }
-    else if(efTarget<=0){
-      rEl.innerHTML=`<div class="alert good"><div class="ico">🛡️</div><div class="body"><span class="head">Set your Emergency Fund target first</span>Choose how many months to hold above — your Reserves money fills the Emergency Fund before anything else. Once it's fully funded, that money frees up to send toward debt or goals.</div></div>`;
-    }
-    else {
-      // Emergency Fund is FULL — that money is now free. Suggest debt; sinking/goals are the user's
-      // choice, offered as a note, never auto-assigned or restricted.
-      const overNote=committed>budget+0.005
-        ? `<div style="margin-top:9px;color:var(--muted);font-size:.85rem">Note: the sinking funds &amp; goals you've set up add up to <strong>${money0(committed)}/mo</strong> — more than this freed <strong>${money0(budget)}/mo</strong> — so you can't fund all of them from here. Pick the ones that matter, or put this toward debt instead.</div>`
-        : (committed>0?`<div style="margin-top:9px;color:var(--muted);font-size:.85rem">You also have <strong>${money0(committed)}/mo</strong> of sinking funds &amp; goals set up — this freed money can cover those instead if you'd rather. Your choice.</div>`:'');
-      rEl.innerHTML=`<div class="alert good"><div class="ico">🎉</div><div class="body"><span class="head">Emergency Fund funded — this money is now free</span>Your Emergency Fund has hit its target, so the <strong>${money0(budget)}/mo</strong> that was filling it isn't needed there anymore. The most powerful next move is to send it to <strong>debt</strong> — add it to your <em>Extra monthly payment</em> on the Debt Payoff Planner below, and you'll be debt-free sooner. Once you're debt-free too, point it at investing or a specific goal. This is a suggestion, not a rule — it's your money to direct.${overNote}</div></div>`;
-    }
-  }
-  const eEl=document.getElementById('equityBudget');
-  if(eEl){
-    const budget=b.equityBudget,extra=b.debtExtra,remaining=budget-extra;
-    if(deficit||(budget<=0&&extra<=0)){eEl.innerHTML='';}
-    else if(remaining>=-0.005){
-      eEl.innerHTML=`<div class="alert good"><div class="ico">💪</div><div class="body"><span class="head">Your debt-payoff money adds up ✓</span>${calcRows([
-        {l:'Money you plan to put toward debt each month',v:money0(budget)},
-        {l:'– Your extra debt payment',v:'–'+money0(extra)},
-        {l:'= Not yet assigned',v:money0(remaining),tot:true}
-      ])}<div style="margin-top:9px">${remaining>0.5?`You've planned <strong>${money0(budget)}/mo</strong> for debt, but your extra payment is only <strong>${money0(extra)}/mo</strong> — <strong>${money0(remaining)}/mo</strong> is going unused. Raise your extra payment above to be debt-free sooner.`:`You're putting your whole <strong>${money0(budget)}/mo</strong> debt budget to work. ✓`}</div></div></div>`;
-    }else{
-      eEl.innerHTML=`<div class="alert bad"><div class="ico">⚠️</div><div class="body"><span class="head">Your extra payment is bigger than your debt budget</span>${calcRows([
-        {l:'Money you plan to put toward debt each month',v:money0(budget)},
-        {l:'Your extra debt payment',v:money0(extra)},
-        {l:'Over each month by',v:money0(extra-budget),tot:true}
-      ])}<div style="margin-top:9px">That's fine if you can truly afford it — just know the extra <strong>${money0(extra-budget)}/mo</strong> is coming out of another category. To match your plan, lower the extra payment or raise the <strong>“Pay off debt” %</strong> on the Treasury tab.</div></div></div>`;
-    }
-  }
+  // The running ledger above is now the single source of truth for where your
+  // margin goes. The old per-stream banners reasoned inside one slice at a time
+  // (e.g. "$0 left for goals" even with a healthy margin), which contradicted
+  // the ledger — so they're retired and their spots cleared.
+  const rEl=document.getElementById('reservesBudget');if(rEl)rEl.innerHTML='';
+  const eEl=document.getElementById('equityBudget');if(eEl)eEl.innerHTML='';
 }
 function setEmMonths(v){state.goals.emergency.monthsTarget=parseFloat(v)||0;save();renderEmergency();renderDashboard();}
 function setEmSaved(v){state.goals.emergency.saved=parseFloat(v)||0;save();renderEmergency();renderDashboard();}
 function setEmWantBy(v){state.goals.emergency.wantBy=v||'';save();renderEmergency();renderDashboard();}
 function renderSavings(){
   const el=document.getElementById('savingsList');
+  const cad=cadence();
   el.innerHTML=state.goals.savings.map((g,i)=>{
     const months=g.date?monthsUntil(g.date):null;
     const remain=Math.max(0,(+g.target||0)-(+g.saved||0));
@@ -1295,13 +1289,13 @@ function renderSavings(){
         <label class="fld"><span>Target</span><input type="number" min="0" value="${g.target}" onchange="updGoal('savings',${i},'target',this.value)"></label>
         <label class="fld"><span>Saved</span><input type="number" min="0" value="${g.saved}" onchange="updGoal('savings',${i},'saved',this.value)"></label>
         <label class="fld"><span>Target date (optional)</span><input type="date" value="${g.date||''}" onchange="updGoal('savings',${i},'date',this.value)"></label>
-        <label class="fld"><span>To save each month</span><div class="cell-output">${mNeed!=null?money0(mNeed):'—'}</div></label>
+        <label class="fld"><span>Put in ${cad.word}</span><div class="cell-output">${mNeed!=null?money0(mNeed*cad.F)+cad.suf:'—'}</div></label>
       </div>
       ${progressBar(g.saved,g.target,'#2f5fa0')}
       <div class="goalmeta"><span><strong>${money0(g.saved)}</strong> of ${money0(g.target)} · ${pct}%</span><span>${money0(remain)} to go</span></div>
       ${g.date
-        ? `<div class="goalmeta" style="margin-top:2px"><span>🎯 Save <strong>${money0(mNeed)}/mo</strong> to reach it by ${fmtMonthYear(parseISO(g.date))}</span><span>${months} month${months===1?'':'s'} away</span></div>`
-        : `<div class="goalmeta" style="margin-top:2px"><span style="color:var(--gold)">Add a target date above and this will show exactly how much to save each month.</span></div>`}
+        ? `<div class="goalmeta" style="margin-top:2px"><span>🎯 Put in <strong>${money0(mNeed*cad.F)}${cad.suf}</strong> to reach it by ${fmtMonthYear(parseISO(g.date))}</span><span>${months} month${months===1?'':'s'} away</span></div>`
+        : `<div class="goalmeta" style="margin-top:2px"><span style="color:var(--gold)">Add a target date above and this will show exactly how much to put in ${cad.word}.</span></div>`}
     </div>`;
   }).join('')||`<div class="empty">No savings goals yet — add one below.</div>`;
   renderGoalsBudgets();
@@ -1309,6 +1303,7 @@ function renderSavings(){
 function addSavings(){state.goals.savings.push({name:'New goal',target:1000,saved:0,date:''});save();renderSavings();renderDashboard();}
 function renderSinking(){
   const el=document.getElementById('sinkingList');
+  const cad=cadence();
   let totalMonthly=0;
   el.innerHTML=state.goals.sinking.map((g,i)=>{
     const m=monthsUntil(g.due);
@@ -1323,13 +1318,13 @@ function renderSinking(){
         <label class="fld"><span>Target</span><input type="number" min="0" value="${g.target}" onchange="updGoal('sinking',${i},'target',this.value)"></label>
         <label class="fld"><span>Saved</span><input type="number" min="0" value="${g.saved}" onchange="updGoal('sinking',${i},'saved',this.value)"></label>
         <label class="fld"><span>Due date</span><input type="date" value="${g.due||''}" onchange="updGoal('sinking',${i},'due',this.value)"></label>
-        <label class="fld"><span>Monthly set-aside</span><div class="cell-output">${money0(need)}</div></label>
+        <label class="fld"><span>Put in ${cad.word}</span><div class="cell-output">${money0(need*cad.F)}${cad.suf}</div></label>
       </div>
       ${progressBar(g.saved,g.target,'#C59B27')}
       <div class="goalmeta"><span><strong>${money0(g.saved)}</strong> of ${money0(g.target)}</span><span>${m?m+' months to due date':'set a due date'}</span></div>
     </div>`;
   }).join('')||`<div class="empty">No sinking funds yet — add one below.</div>`;
-  document.getElementById('sinkingTotal').innerHTML=state.goals.sinking.length?`<span></span><span>Total monthly set-asides: <strong>${money0(totalMonthly)}</strong></span>`:'';
+  document.getElementById('sinkingTotal').innerHTML=state.goals.sinking.length?`<span></span><span>Total to set aside ${cad.word}: <strong>${money0(totalMonthly*cad.F)}${cad.suf}</strong></span>`:'';
   renderGoalsBudgets();
 }
 function addSinking(){state.goals.sinking.push({name:'New sinking fund',target:600,saved:0,due:isoMonthsAhead(6)});save();renderSinking();renderDashboard();}
