@@ -52,6 +52,18 @@
   .card-note{color:var(--muted);font-size:.9rem;margin-bottom:16px}
   .priority-note{background:#fff;border:1px solid var(--cream-dk);border-left:4px solid var(--gold);border-radius:8px;padding:14px 16px;font-size:.9rem;color:var(--ink);margin:0 0 22px;line-height:1.55}
   .priority-note.done{border-left-color:var(--green)}
+  .alert{border-radius:12px;padding:16px 18px;margin:0 0 22px;font-size:.92rem;line-height:1.55;display:flex;gap:13px;align-items:flex-start;border:1px solid}
+  .alert .ico{font-size:1.6rem;flex:0 0 auto;line-height:1.1}
+  .alert .body{flex:1}
+  .alert .body .head{display:block;font-size:1.06rem;font-weight:700;margin-bottom:3px;letter-spacing:.2px}
+  .alert.bad{background:var(--danger-bg);border-color:#d99b8e;color:#6f2b22;box-shadow:0 6px 20px rgba(143,58,47,.14)}
+  .alert.bad .head{color:var(--danger)}
+  .alert.good{background:var(--sage);border-color:var(--sage-dk);color:#2c4a2d}
+  .alert.good .head{color:var(--green)}
+  .alert.critical{background:var(--danger-bg);border:2px solid var(--danger);color:#5f241c;box-shadow:0 10px 30px rgba(143,58,47,.22)}
+  .alert.critical .head{color:var(--danger);font-size:1.14rem}
+  @keyframes alertpulse{0%,100%{box-shadow:0 10px 30px rgba(143,58,47,.22)}50%{box-shadow:0 10px 34px rgba(143,58,47,.42)}}
+  .alert.critical{animation:alertpulse 2.2s ease-in-out infinite}
   .gold-rule{height:2px;background:linear-gradient(90deg,var(--gold),transparent);border:none;margin:2px 0 18px}
   .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:18px;margin-bottom:8px}
   .stat{background:#fff;border-radius:var(--radius);padding:22px;border:1px solid var(--cream-dk);box-shadow:var(--shadow);position:relative;overflow:hidden}
@@ -372,6 +384,7 @@
       <h2>The Sovereign Treasury Ledger</h2>
       <div class="sub">A fixed-expenses-first flow: your non-negotiables are covered before a single dollar of surplus is allocated. Type into the <em>blue</em> fields; the <em>green</em> cells calculate for you.</div>
     </div>
+    <div id="alertTreasury"></div>
     <div class="card">
       <div class="card-title">💼 Income &amp; Pay Schedule <span class="badge">Feeds the Calendar</span></div>
       <hr class="gold-rule">
@@ -467,6 +480,7 @@
       <h2>Goals, Funds &amp; Debt Freedom</h2>
       <div class="sub">Where your Reserves and Equity streams are actually headed — an emergency fund, sinking funds for irregular costs, named savings goals, and a payoff plan that gives you a real debt-free date.</div>
     </div>
+    <div id="alertGoals"></div>
     <div class="card">
       <div class="card-title">⛑️ Emergency Fund</div>
       <hr class="gold-rule">
@@ -1013,6 +1027,7 @@ function renderEngine(){
       ? `<span style="font-size:1.2rem">✅</span> Allocations balanced &amp; solvent — your margin is ${money(c.margin)} per month.`
       : `<span style="font-size:1.2rem">❌</span> System deficit of ${money(Math.abs(c.margin))} — reduce overhead or prune subscriptions.`;
   });
+  renderAlerts();
 }
 const STREAMS=['Reserves','Equity','Lifestyle'];
 function sameMonth(iso){const d=new Date(iso);const n=new Date();return d.getFullYear()===n.getFullYear()&&d.getMonth()===n.getMonth();}
@@ -1100,26 +1115,39 @@ function streamBudgets(){
   const savingsMonthly=(state.goals.savings||[]).reduce((s,g)=>{if(!g.date)return s;const m=monthsUntil(g.date);return s+(m?Math.max(0,((+g.target||0)-(+g.saved||0)))/m:0);},0);
   return {reservesBudget:c.reserves.monthly,savingsCommitted:sinkingMonthly+savingsMonthly,equityBudget:c.equity.monthly,debtExtra:+state.debtExtra||0};
 }
+function renderAlerts(){
+  const c=calc();
+  const els=[document.getElementById('alertTreasury'),document.getElementById('alertGoals')];
+  let html='';
+  if(c.income>0&&c.margin<-0.005){
+    const overhead=c.income-c.margin;
+    html=`<div class="alert critical"><div class="ico">🚨</div><div class="body"><span class="head">You're upside down — your bills cost more than you earn.</span>Your income is <strong>${money0(c.income)}/mo</strong>, but your Four Walls + Recurring Expenses total <strong>${money0(overhead)}/mo</strong> — leaving you <strong>short by ${money0(-c.margin)}/mo</strong>. There is no leftover money to save, invest, or pay down debt until this gap is closed. You have two levers: <strong>bring in more income</strong>, or <strong>cut expenses</strong> — start on the Treasury tab under <em>Recurring Expenses</em> and mark anything you can live without as “Prune (Cancel).” Fix this first; everything else on this page depends on it.</div></div>`;
+  }
+  els.forEach(el=>{if(el)el.innerHTML=html;});
+}
 function renderGoalsBudgets(){
+  renderAlerts();
   const b=streamBudgets();
+  const c=calc();
+  const deficit=c.income>0&&c.margin<-0.005;
   const rEl=document.getElementById('reservesBudget');
   if(rEl){
     const budget=b.reservesBudget,committed=b.savingsCommitted,remaining=budget-committed;
-    if(budget<=0&&committed<=0){rEl.innerHTML='';}
+    if(deficit||(budget<=0&&committed<=0)){rEl.innerHTML='';}
     else if(remaining>=-0.005){
-      rEl.innerHTML=`<div class="priority-note done">💰 <strong>Savings budget — you're on track.</strong> Your “Save for emergencies” stream is <strong>${money0(budget)}/mo</strong>. Your sinking funds and dated savings goals are drawing <strong>${money0(committed)}/mo</strong>, which leaves <strong>${money0(remaining)}/mo</strong> to pour into your Emergency Fund. Everything below fits inside this budget. ✓</div>`;
+      rEl.innerHTML=`<div class="alert good"><div class="ico">💰</div><div class="body"><span class="head">Savings budget — you're on track.</span>Your “Save for emergencies” stream is <strong>${money0(budget)}/mo</strong>. Your sinking funds and dated savings goals draw <strong>${money0(committed)}/mo</strong>, leaving <strong>${money0(remaining)}/mo</strong> to pour into your Emergency Fund. Everything below fits inside this budget. ✓</div></div>`;
     }else{
-      rEl.innerHTML=`<div class="priority-note" style="border-left-color:var(--danger)">⚠ <strong>Over your savings budget by ${money0(-remaining)}/mo.</strong> Your “Save for emergencies” stream is only ${money0(budget)}/mo, but the sinking funds and dated goals below need ${money0(committed)}/mo. To fix it: raise the Reserves % on the Treasury tab, push out a due date, or lower a target.</div>`;
+      rEl.innerHTML=`<div class="alert bad"><div class="ico">⚠️</div><div class="body"><span class="head">Over your savings budget by ${money0(-remaining)}/mo.</span>Your “Save for emergencies” stream is only <strong>${money0(budget)}/mo</strong>, but the sinking funds and dated goals below need <strong>${money0(committed)}/mo</strong>. Three ways to fix it: raise the <strong>Reserves %</strong> on the Treasury tab, push out a <strong>due date</strong>, or lower a <strong>target</strong>.</div></div>`;
     }
   }
   const eEl=document.getElementById('equityBudget');
   if(eEl){
     const budget=b.equityBudget,extra=b.debtExtra,remaining=budget-extra;
-    if(budget<=0&&extra<=0){eEl.innerHTML='';}
+    if(deficit||(budget<=0&&extra<=0)){eEl.innerHTML='';}
     else if(remaining>=-0.005){
-      eEl.innerHTML=`<div class="priority-note done">💪 <strong>Debt &amp; wealth budget.</strong> Your “Pay off debt &amp; build wealth” stream is <strong>${money0(budget)}/mo</strong>; your extra payment is <strong>${money0(extra)}/mo</strong>${remaining>0.5?`, so <strong>${money0(remaining)}/mo</strong> is still unused — raise your extra payment to be debt-free sooner (or invest it once the debt's gone).`:` — you're putting the whole stream to work. ✓`}</div>`;
+      eEl.innerHTML=`<div class="alert good"><div class="ico">💪</div><div class="body"><span class="head">Debt &amp; wealth budget.</span>Your “Pay off debt &amp; build wealth” stream is <strong>${money0(budget)}/mo</strong>; your extra payment is <strong>${money0(extra)}/mo</strong>${remaining>0.5?`, so <strong>${money0(remaining)}/mo</strong> is still unused — raise your extra payment to be debt-free sooner (or invest it once the debt's gone).`:` — you're putting the whole stream to work. ✓`}</div></div>`;
     }else{
-      eEl.innerHTML=`<div class="priority-note" style="border-left-color:var(--danger)">⚠ <strong>Your extra payment (${money0(extra)}/mo) is more than your debt-payoff budget (${money0(budget)}/mo)</strong> by ${money0(-remaining)}/mo. That's fine if you can truly swing it — just know the difference is coming out of another stream. To match your plan, raise the “Pay off debt” % on Treasury or lower the extra payment.</div>`;
+      eEl.innerHTML=`<div class="alert bad"><div class="ico">⚠️</div><div class="body"><span class="head">Extra payment is over your debt budget by ${money0(-remaining)}/mo.</span>Your extra payment (<strong>${money0(extra)}/mo</strong>) is more than your “Pay off debt” stream (<strong>${money0(budget)}/mo</strong>). That's fine if you can truly swing it — just know the difference is coming out of another stream. To match your plan, raise the <strong>“Pay off debt” %</strong> on Treasury or lower the extra payment.</div></div>`;
     }
   }
 }
